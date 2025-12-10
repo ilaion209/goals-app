@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>אפליקציית מטרות לשנה</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#667eea" />
+</head>
+<body>
+  <header>
+    <h1>המטרות שלי לשנה</h1>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="home" class="active">היום</button>
+    <button data-tab="goals">מטרות</button>
+    <button data-tab="months">יעדים חודשיים</button>
+    <button data-tab="tasks-board">לוח משימות</button>
+  </nav>
+
+  <main>
+    <!-- 🏠 היום -->
+    <section id="home" class="tab active">
+      <h2>היום</h2>
+      <p id="today-date" class="today-date"></p>
+
+      <!-- לוח המשימות להיום -->
+      <div class="card">
+        <h3>המשימות להיום</h3>
+        <p class="small-text">
+          אלו המשימות המומלצות להיום מתוך החודש הנוכחי, לפי חשיבות ודחיפות.
+        </p>
+
+        <!-- סיכום קצר של כמה משימות יש להיום -->
+        <p id="today-tasks-summary" class="small-text"></p>
+
+        <!-- רשימת המשימות להיום -->
+        <ul id="today-tasks-list" class="simple-list"></ul>
+
+        <!-- כפתור מעבר ללוח המשימות להוספת משימה -->
+        <button id="go-to-tasks-current-month" class="primary-button">
+          הוסף משימה בלוח המשימות
+        </button>
+      </div>
+
+      <div class="card highlight">
+        <h3>השנה</h3>
+        <p id="year-goals-summary">0 מטרות הוגדרו</p>
+        <p id="year-tasks-summary">0 מתוך 0 משימות בוצעו</p>
+        <div class="progress-bar">
+          <div id="year-progress-bar"></div>
+        </div>
+        <p id="year-progress-text">0%</p>
+      </div>
+
+      <div class="card">
+        <h3>משפט מוטיבציה להיום</h3>
+        <p id="motivation-text" class="motivation-text"></p>
+      </div>
+
+      <div class="card">
+        <h3 id="home-month-title">החודש</h3>
+
+        <h4>היעדים לחודש הנוכחי</h4>
+        <ul id="home-month-targets" class="simple-list"></ul>
+
+        <p id="home-month-tasks-summary">0 מתוך 0 משימות בוצעו</p>
+        <div class="progress-bar small">
+          <div id="home-month-progress-bar"></div>
+        </div>
+        <p id="home-month-progress-text" class="small-text">0%</p>
+      </div>
+    </section>
+
+    <!-- 🎯 מטרות לשנה -->
+    <section id="goals" class="tab">
+      <h2>מטרות לשנה</h2>
+      <p class="hint">
+        כאן אתה מגדיר את הדברים הגדולים שאתה רוצה להשיג השנה. כל מטרה יכולה להכיל יעדים חודשיים ומשימות.
+      </p>
+
+      <form id="goal-form">
+        <input
+          type="text"
+          id="goal-title"
+          placeholder="הוסף מטרה (למשל: לימודים, כלכלה, משפחה...)"
+          required
+        />
+        <button type="submit">הוסף מטרה</button>
+      </form>
+
+      <ul id="goals-list"></ul>
+    </section>
+
+    <!-- 📅 יעדים חודשיים -->
+    <section id="months" class="tab">
+      <h2>יעדים חודשיים</h2>
+
+      <label class="inline-label">
+        חודש:
+        <select id="month-targets-select"></select>
+      </label>
+
+      <form id="target-form">
+        <input
+          type="text"
+          id="target-title-input"
+          placeholder="יעד חדש לחודש הנבחר"
+          required
+        />
+        <select id="target-goal-select">
+          <option value="">בחר מטרה לשנה</option>
+        </select>
+        <button type="submit">הוסף יעד</button>
+      </form>
+
+      <ul id="targets-list"></ul>
+    </section>
+
+    <!-- 🗂 לוח משימות -->
+    <section id="tasks-board" class="tab">
+      <h2>לוח משימות</h2>
+      <p class="hint">
+        כאן אתה רואה ומנהל את כל המשימות שלך, עם סינון לפי מטרה, יעד, חודש ודרוג חשיבות/דחיפות.
+      </p>
+
+      <div class="filters card">
+        <div class="filter-row">
+          <label>
+            מטרה:
+            <select id="board-goal-filter">
+              <option value="">כל המטרות</option>
+            </select>
+          </label>
+
+          <label>
+            יעד:
+            <select id="board-target-filter">
+              <option value="">כל היעדים</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="filter-row">
+          <label>
+            חודש:
+            <select id="board-month-filter">
+              <option value="">כל החודשים</option>
+            </select>
+          </label>
+
+          <label>
+            דרוג חשיבות/דחיפות:
+            <select id="board-priority-filter">
+              <option value="">כל הדרגות</option>
+              <option value="hh">חשוב ודחוף</option>
+              <option value="hl">חשוב ולא דחוף</option>
+              <option value="lh">לא חשוב אך דחוף</option>
+              <option value="ll">לא חשוב ולא דחוף</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>הוספת משימה</h3>
+        <form id="board-task-form">
+          <input
+            type="text"
+            id="board-task-title"
+            placeholder="שם המשימה"
+            required
+          />
+          <select id="board-task-goal">
+            <option value="">בחר מטרה</option>
+          </select>
+          <select id="board-task-target">
+            <option value="">בחר יעד (לא חובה)</option>
+          </select>
+          <select id="board-task-month"></select>
+          <select id="board-task-importance">
+            <option value="high">חשוב</option>
+            <option value="low">פחות חשוב</option>
+          </select>
+          <select id="board-task-urgency">
+            <option value="high">דחוף</option>
+            <option value="low">לא דחוף</option>
+          </select>
+          <button type="submit">הוסף משימה</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>משימות</h3>
+        <p id="board-tasks-summary" class="small-text"></p>
+        <ul id="board-tasks-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- טוסט פידבק אחרי משימה שבוצעה -->
+  <div id="feedback-toast" class="feedback-toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

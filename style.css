@@ -1,0 +1,346 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f7fafc;
+  color: #1a202c;
+  direction: rtl;
+}
+
+header {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 1.2rem 1rem;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+main {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto 4rem;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #edf2f7;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tabs button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.3rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: #667eea;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tab {
+  display: none;
+  margin-top: 1rem;
+}
+
+.tab.active {
+  display: block;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.card.highlight {
+  border: 1px solid #667eea;
+}
+
+.today-date {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.simple-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* משימות היום / לוח משימות */
+
+.simple-list li,
+#board-tasks-list li {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-start;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.task-sub {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.task-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.small-btn {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: #edf2f7;
+}
+
+.small-btn.primary {
+  background: #667eea;
+  color: #ffffff;
+}
+
+.small-btn.delete {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.priority-tag {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+/* צבעים לכל רמת עדיפות */
+.priority-hh {
+  background: #feb2b2;
+  color: #742a2a;
+}
+
+.priority-hl {
+  background: #faf089;
+  color: #744210;
+}
+
+.priority-lh {
+  background: #90cdf4;
+  color: #1a365d;
+}
+
+.priority-ll {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #edf2f7;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.3rem 0;
+}
+
+.progress-bar.small {
+  height: 6px;
+}
+
+.progress-bar > div {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #48bb78, #38b2ac);
+  transition: width 0.3s ease;
+}
+
+.small-text {
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.motivation-text {
+  font-size: 0.95rem;
+  color: #2d3748;
+}
+
+/* טפסים */
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.8rem;
+}
+
+form input[type="text"],
+form select {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e0;
+  font-size: 0.9rem;
+}
+
+form button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: none;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+form button:hover {
+  background: #5a67d8;
+}
+
+.inline-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+/* רשימות מטרות ויעדים */
+
+#goals-list,
+#targets-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#goals-list li,
+#targets-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.goal-info,
+.target-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.goal-title,
+.target-title {
+  font-weight: 600;
+}
+
+.goal-sub,
+.target-sub {
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.goal-controls,
+.target-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* פידבק */
+
+.feedback-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 50%;
+  transform: translateX(50%);
+  background: #48bb78;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 999;
+}
+
+.feedback-toast.show {
+  opacity: 1;
+  transform: translateX(50%) translateY(-5px);
+}
+
+.feedback-toast.hidden {
+  display: none;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+/* כפתור ראשי */
+.primary-button {
+  width: 100%;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: none;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+/* ריספונסיביות קטנה */
+@media (min-width: 768px) {
+  form {
+    flex-wrap: nowrap;
+  }
+}

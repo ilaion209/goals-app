@@ -1,0 +1,22 @@
+{
+  "name": "אפליקציית מטרות לשנה",
+  "short_name": "מטרות",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7fafc",
+  "theme_color": "#667eea",
+  "lang": "he-IL",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
