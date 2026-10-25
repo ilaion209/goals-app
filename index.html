@@ -1,208 +1,154 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>אפליקציית מטרות לשנה</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#667eea" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="30 יום קדימה — התקדמות אישית">
+  <title>30 יום קדימה</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>המטרות שלי לשנה</h1>
+  <header class="topbar">
+    <div class="brand-mark">30</div>
+    <div>
+      <h1>30 יום קדימה</h1>
+      <p>פחות דיבורים. יותר התקדמות.</p>
+    </div>
+    <button id="theme-toggle" class="icon-button">◐</button>
   </header>
 
-  <nav class="tabs">
-    <button data-tab="home" class="active">היום</button>
-    <button data-tab="goals">מטרות</button>
-    <button data-tab="months">יעדים חודשיים</button>
-    <button data-tab="tasks-board">לוח משימות</button>
-  </nav>
-
-  <main>
-    <!-- 🏠 היום -->
-    <section id="home" class="tab active">
-      <h2>היום</h2>
-      <p id="today-date" class="today-date"></p>
-
-      <!-- לוח המשימות להיום -->
-      <div class="card">
-        <h3>המשימות להיום</h3>
-        <p class="small-text">
-          אלו המשימות המומלצות להיום מתוך החודש הנוכחי, לפי חשיבות ודחיפות.
-        </p>
-
-        <!-- סיכום קצר של כמה משימות יש להיום -->
-        <p id="today-tasks-summary" class="small-text"></p>
-
-        <!-- רשימת המשימות להיום -->
-        <ul id="today-tasks-list" class="simple-list"></ul>
-
-        <!-- כפתור מעבר ללוח המשימות להוספת משימה -->
-        <button id="go-to-tasks-current-month" class="primary-button">
-          הוסף משימה בלוח המשימות
-        </button>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow" id="today-label"></p>
+        <h2 id="greeting">בונים עקביות, יום אחרי יום.</h2>
+        <p class="hero-sub">לא צריך יום מושלם. צריך לבצע את הדבר החשוב הבא.</p>
       </div>
-
-      <div class="card highlight">
-        <h3>השנה</h3>
-        <p id="year-goals-summary">0 מטרות הוגדרו</p>
-        <p id="year-tasks-summary">0 מתוך 0 משימות בוצעו</p>
-        <div class="progress-bar">
-          <div id="year-progress-bar"></div>
+      <div class="hero-progress">
+        <div class="ring" id="progress-ring">
+          <span id="progress-number">0%</span>
         </div>
-        <p id="year-progress-text">0%</p>
-      </div>
-
-      <div class="card">
-        <h3>משפט מוטיבציה להיום</h3>
-        <p id="motivation-text" class="motivation-text"></p>
-      </div>
-
-      <div class="card">
-        <h3 id="home-month-title">החודש</h3>
-
-        <h4>היעדים לחודש הנוכחי</h4>
-        <ul id="home-month-targets" class="simple-list"></ul>
-
-        <p id="home-month-tasks-summary">0 מתוך 0 משימות בוצעו</p>
-        <div class="progress-bar small">
-          <div id="home-month-progress-bar"></div>
-        </div>
-        <p id="home-month-progress-text" class="small-text">0%</p>
+        <span>התקדמות המסע</span>
       </div>
     </section>
 
-    <!-- 🎯 מטרות לשנה -->
-    <section id="goals" class="tab">
-      <h2>מטרות לשנה</h2>
-      <p class="hint">
-        כאן אתה מגדיר את הדברים הגדולים שאתה רוצה להשיג השנה. כל מטרה יכולה להכיל יעדים חודשיים ומשימות.
-      </p>
+    <nav class="tabs">
+      <button class="tab-button active" data-tab="today">היום</button>
+      <button class="tab-button" data-tab="plan">תוכנית 30 יום</button>
+      <button class="tab-button" data-tab="goals">היעדים שלי</button>
+      <button class="tab-button" data-tab="review">סיכום יומי</button>
+    </nav>
 
-      <form id="goal-form">
-        <input
-          type="text"
-          id="goal-title"
-          placeholder="הוסף מטרה (למשל: לימודים, כלכלה, משפחה...)"
-          required
-        />
-        <button type="submit">הוסף מטרה</button>
-      </form>
+    <section id="tab-today" class="tab-panel active">
+      <div class="section-heading">
+        <h2>המשימות להיום</h2>
+        <span id="day-pill" class="pill">יום 1 מתוך 30</span>
+      </div>
 
-      <ul id="goals-list"></ul>
+      <div class="card daily-focus">
+        <p class="eyebrow">הפוקוס היומי</p>
+        <h3 id="daily-title"></h3>
+        <p id="daily-description"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-heading">
+          <h3>צ'ק־ליסט יומי</h3>
+          <span id="checklist-count" class="muted">0 מתוך 5</span>
+        </div>
+        <div id="daily-checklist" class="checklist"></div>
+        <div class="progress-track">
+          <div id="today-progress" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="grid-two">
+        <div class="card">
+          <h3>המשימה החשובה שלי</h3>
+          <textarea id="important-task" rows="3"
+            placeholder="מה הדבר האחד שיקדם אותי היום?"></textarea>
+          <button id="save-important-task" class="button primary full">
+            שמירת המשימה
+          </button>
+        </div>
+
+        <div class="card quote-card">
+          <h3>תוצאות נבנות מהפעולות שאתה חוזר עליהן.</h3>
+          <p>תמדוד את עצמך לפי מה שביצעת, לא לפי כמה התלהבת להתחיל.</p>
+        </div>
+      </div>
     </section>
 
-    <!-- 📅 יעדים חודשיים -->
-    <section id="months" class="tab">
-      <h2>יעדים חודשיים</h2>
+    <section id="tab-plan" class="tab-panel">
+      <div class="section-heading">
+        <h2>תוכנית 30 יום</h2>
+      </div>
+      <div id="plan-weeks" class="plan-weeks"></div>
+    </section>
 
-      <label class="inline-label">
-        חודש:
-        <select id="month-targets-select"></select>
-      </label>
+    <section id="tab-goals" class="tab-panel">
+      <div class="section-heading"><h2>היעדים שלי</h2></div>
 
-      <form id="target-form">
-        <input
-          type="text"
-          id="target-title-input"
-          placeholder="יעד חדש לחודש הנבחר"
-          required
-        />
-        <select id="target-goal-select">
-          <option value="">בחר מטרה לשנה</option>
+      <form id="goal-form" class="card goal-form">
+        <label for="goal-title">מה היעד שלך?</label>
+        <input id="goal-title" required maxlength="120"
+          placeholder="למשל: לבנות עסק מצליח">
+
+        <label for="goal-category">תחום</label>
+        <select id="goal-category">
+          <option>עסקים וכסף</option>
+          <option>בריאות וגוף</option>
+          <option>משפחה וזוגיות</option>
+          <option>תורה ותפילה</option>
+          <option>התפתחות אישית</option>
+          <option>אחר</option>
         </select>
-        <button type="submit">הוסף יעד</button>
+
+        <label for="goal-measure">איך מודדים הצלחה?</label>
+        <input id="goal-measure" maxlength="160"
+          placeholder="תוצאה ברורה שאליה אתה רוצה להגיע">
+
+        <button class="button primary" type="submit">הוספת יעד</button>
       </form>
 
-      <ul id="targets-list"></ul>
+      <div id="goals-list" class="goal-list"></div>
     </section>
 
-    <!-- 🗂 לוח משימות -->
-    <section id="tasks-board" class="tab">
-      <h2>לוח משימות</h2>
-      <p class="hint">
-        כאן אתה רואה ומנהל את כל המשימות שלך, עם סינון לפי מטרה, יעד, חודש ודרוג חשיבות/דחיפות.
-      </p>
+    <section id="tab-review" class="tab-panel">
+      <div class="section-heading"><h2>סיכום יומי</h2></div>
 
-      <div class="filters card">
-        <div class="filter-row">
-          <label>
-            מטרה:
-            <select id="board-goal-filter">
-              <option value="">כל המטרות</option>
-            </select>
-          </label>
+      <form id="review-form" class="card review-form">
+        <label for="review-win">מה עשיתי טוב היום?</label>
+        <textarea id="review-win" rows="3"></textarea>
 
-          <label>
-            יעד:
-            <select id="board-target-filter">
-              <option value="">כל היעדים</option>
-            </select>
-          </label>
-        </div>
+        <label for="review-improve">מה לשפר מחר?</label>
+        <textarea id="review-improve" rows="3"></textarea>
 
-        <div class="filter-row">
-          <label>
-            חודש:
-            <select id="board-month-filter">
-              <option value="">כל החודשים</option>
-            </select>
-          </label>
+        <label for="review-tomorrow">מה הפעולה החשובה למחר?</label>
+        <textarea id="review-tomorrow" rows="2"></textarea>
 
-          <label>
-            דרוג חשיבות/דחיפות:
-            <select id="board-priority-filter">
-              <option value="">כל הדרגות</option>
-              <option value="hh">חשוב ודחוף</option>
-              <option value="hl">חשוב ולא דחוף</option>
-              <option value="lh">לא חשוב אך דחוף</option>
-              <option value="ll">לא חשוב ולא דחוף</option>
-            </select>
-          </label>
-        </div>
-      </div>
+        <button class="button primary" type="submit">שמירת הסיכום</button>
+        <button class="button secondary" type="button" id="export-data">
+          ייצוא הנתונים לקובץ
+        </button>
+      </form>
 
       <div class="card">
-        <h3>הוספת משימה</h3>
-        <form id="board-task-form">
-          <input
-            type="text"
-            id="board-task-title"
-            placeholder="שם המשימה"
-            required
-          />
-          <select id="board-task-goal">
-            <option value="">בחר מטרה</option>
-          </select>
-          <select id="board-task-target">
-            <option value="">בחר יעד (לא חובה)</option>
-          </select>
-          <select id="board-task-month"></select>
-          <select id="board-task-importance">
-            <option value="high">חשוב</option>
-            <option value="low">פחות חשוב</option>
-          </select>
-          <select id="board-task-urgency">
-            <option value="high">דחוף</option>
-            <option value="low">לא דחוף</option>
-          </select>
-          <button type="submit">הוסף משימה</button>
-        </form>
+        <h3>סיכומים קודמים</h3>
+        <div id="review-history"></div>
       </div>
-
-      <div class="card">
-        <h3>משימות</h3>
-        <p id="board-tasks-summary" class="small-text"></p>
-        <ul id="board-tasks-list"></ul>
-      </div>
+      <p class="small-note">הנתונים נשמרים בדפדפן במכשיר הזה בלבד.</p>
     </section>
+
+    <footer>
+      <span>צעד אחד בכל פעם.</span>
+      <button id="reset-progress" class="text-button">איפוס התקדמות</button>
+    </footer>
   </main>
 
-  <!-- טוסט פידבק אחרי משימה שבוצעה -->
-  <div id="feedback-toast" class="feedback-toast hidden"></div>
-
+  <div id="toast" class="toast" role="status"></div>
   <script src="app.js"></script>
 </body>
 </html>
