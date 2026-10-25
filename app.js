@@ -1,1076 +1,432 @@
-// ===== נתונים בסיסיים =====
-var STORAGE_KEY = "goals_app_v_final";
+(() => {
+  "use strict";
 
-var state = {
-  goals: [],   // {id, title}
-  targets: [], // {id, title, goalId, month}
-  tasks: []    // {id, title, goalId, targetId, month, done, importance, urgency}
-};
+  const STORAGE_KEY = "30-days-forward-v1";
 
-function loadState() {
+  const checklistItems = [
+    { id: "prayer", label: "תפילה ולימוד — להתחיל את היום בכיוון הנכון" },
+    { id: "business", label: "פעולה משמעותית לעסק או לפרנסה" },
+    { id: "health", label: "פעולה לבריאות: אימון, הליכה או תזונה מתוכננת" },
+    { id: "family", label: "זמן נוכח עם המשפחה, בלי מסך" },
+    { id: "review", label: "סיכום קצר ותכנון הפעולה של מחר" }
+  ];
+
+  const days = [
+    ["מתחילים באחריות", "כתוב למה אתה רוצה שינוי ומה המחיר של להישאר באותו מקום."],
+    ["מגדירים הצלחה", "בחר שלושה תחומים חשובים וקבע תוצאה רצויה לכל אחד."],
+    ["מנקים רעש", "זהה הרגל אחד שגוזל זמן והגדר לו גבול ברור."],
+    ["בוחרים פעולה אחת", "עשה את המשימה החשובה לפני שאתה נגרר להסחות."],
+    ["מסתכלים למציאות בעיניים", "כתוב מה עובד, מה לא, ומה בשליטתך."],
+    ["יוצרים סביבת הצלחה", "הכן מראש את הדברים שיעזרו לך לבצע מחר."],
+    ["סקירה שבועית", "בדוק מה ביצעת, בלי תירוצים ובלי שיפוט עצמי מיותר."],
+    ["עוברים מדיבורים לביצוע", "בצע צעד קטן שדחית יותר מדי זמן."],
+    ["מתאמנים בעקביות", "קבע זמן קבוע לפעולה חשובה וחזור עליו."],
+    ["מחליפים תירוץ בתוכנית", "לכל מכשול צפוי, כתוב פתרון מעשי."],
+    ["לומדים להגיד לא", "בטל או דחה דבר אחד שאינו משרת את היעדים."],
+    ["מתקדמים גם בלי חשק", "בצע גרסה קטנה של המשימה גם ביום חלש."],
+    ["בודקים את ההתקדמות", "השווה את הפעולות שלך ליעדים שהגדרת."],
+    ["סקירה שבועית", "שמור על מה שעובד ושנה דבר אחד בלבד."],
+    ["מייצרים ערך", "רשום בעיה אמיתית של אדם או עסק שאתה יכול לעזור לפתור."],
+    ["מדברים עם אנשים", "צור קשר עם אדם אחד שיכול ללמד אותך או להיות לקוח."],
+    ["לומדים מיומנות", "הקדש 25 דקות ללמידה שמחוברת למטרה."],
+    ["בודקים כסף", "בדוק הוצאות, הכנסות והחלטה כלכלית אחת לשיפור."],
+    ["מקדמים הזדמנות", "בצע פנייה, הצעה או צעד עסקי מדיד."],
+    ["משפרים הצעה", "נסח בבירור למי אתה עוזר, באיזו בעיה ואיזו תוצאה."],
+    ["סקירה שבועית", "בדוק אילו פעולות יצרו תוצאה ואילו רק העסיקו אותך."],
+    ["מגינים על האנרגיה", "שפר דבר אחד בשינה, בתנועה או בתזונה."],
+    ["נוכחות בבית", "קבע זמן משפחתי מוגדר והנח את הטלפון בצד."],
+    ["חוזרים ליסודות", "בצע את ההרגל הקטן שהכי עוזר לך להתייצב."],
+    ["מנקים התחייבויות", "סגור משימה פתוחה אחת שמכבידה עליך."],
+    ["מבקשים משוב", "שאל אדם אמין מה אפשר לשפר בדרך הפעולה שלך."],
+    ["מחליטים על הצעד הבא", "בחר פעולה אחת שתמשיך גם אחרי היום ה־30."],
+    ["בונים שיטה", "כתוב שגרה שבועית ריאלית שאפשר להתמיד בה."],
+    ["מודדים את הדרך", "השווה את מצבך עכשיו לנקודת ההתחלה."],
+    ["סיכום והתחייבות", "כתוב מה למדת, במה השתפרת, ומה יהיו שלושת הצעדים הבאים."]
+  ];
+
+  const weekNames = [
+    ["שבוע 1 · שליטה וכיוון", "להבין איפה אתה נמצא ולבחור מה חשוב."],
+    ["שבוע 2 · פעולה ואחריות", "לפעול גם בלי לחכות למוטיבציה."],
+    ["שבוע 3 · ערך וכסף", "לייצר ערך, ללמוד ולבנות הזדמנויות."],
+    ["שבוע 4 · עקביות והמשך", "לחבר את הפעולות לשיטה שתמשיך איתך."]
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  const localDate = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const initialState = () => ({
+    startDate: localDate(),
+    checks: {},
+    importantTasks: {},
+    goals: [],
+    reviews: {},
+    theme: "dark"
+  });
+
+  let state;
+
   try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      var loaded = JSON.parse(raw);
-      state.goals   = loaded.goals   || [];
-      state.targets = loaded.targets || [];
-      state.tasks   = loaded.tasks   || [];
-    }
-  } catch (e) {
-    console.error("Failed to load state", e);
+    state = {
+      ...initialState(),
+      ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}")
+    };
+  } catch {
+    state = initialState();
   }
-}
 
-function saveState() {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({
-      goals: state.goals,
-      targets: state.targets,
-      tasks: state.tasks
-    })
-  );
-}
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+  }
 
-var monthNames = [
-  "ינואר","פברואר","מרץ","אפריל","מאי","יוני",
-  "יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"
-];
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[char]));
+  }
 
-function currentMonthNumber() {
-  return new Date().getMonth() + 1;
-}
+  function dayIndex() {
+    const start = new Date(`${state.startDate || localDate()}T00:00:00`);
+    const now = new Date(`${localDate()}T00:00:00`);
+    return Math.max(0, Math.min(29, Math.floor((now - start) / 86400000)));
+  }
 
-var MOTIVATION_QUOTES = [
-  "כל משימה קטנה שאתה מסיים היא צעד גדול לשנה שאתה רוצה.",
-  "לא חייבים לעשות הכול היום – מספיק שעושים את הצעד הבא.",
-  "התקדמות עדיפה על שלמות. תמשיך לזוז.",
-  "היום אתה בונה את השנה שתרצה להסתכל עליה בגאווה.",
-  "משימה אחת פחות, מטרה אחת קרובה יותר."
-];
+  function dateLabel(date) {
+    return new Date(`${date}T12:00:00`).toLocaleDateString("he-IL", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  }
 
-var FEEDBACK_MESSAGES = [
-  "כל הכבוד! עוד משימה בדרך למטרה 👏",
-  "יפה מאוד, אתה בתנועה קדימה 💪",
-  "מעולה! ככה בונים שנה חזקה ✨",
-  "ככה נראית התקדמות אמיתית 🚀",
-  "נהדר! כל V כזה מצטבר 💡"
-];
+  function showToast(message) {
+    const toast = $("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
 
-function randomItem(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => {
+      toast.classList.remove("show");
+    }, 2200);
+  }
 
-// ===== אלמנטים מה-DOM =====
-var tabButtons   = document.querySelectorAll(".tabs button");
-var tabSections  = document.querySelectorAll(".tab");
+  function selectTab(name) {
+    document.querySelectorAll(".tab-button").forEach(button => {
+      button.classList.toggle("active", button.dataset.tab === name);
+    });
 
-var yearGoalsSummary  = document.getElementById("year-goals-summary");
-var yearTasksSummary  = document.getElementById("year-tasks-summary");
-var yearProgressBar   = document.getElementById("year-progress-bar");
-var yearProgressText  = document.getElementById("year-progress-text");
+    document.querySelectorAll(".tab-panel").forEach(panel => {
+      panel.classList.toggle("active", panel.id === `tab-${name}`);
+    });
 
-var motivationText    = document.getElementById("motivation-text");
+    if (name === "review") renderReviews();
 
-var homeMonthTitle        = document.getElementById("home-month-title");
-var homeMonthTargets      = document.getElementById("home-month-targets");
-var homeMonthTasksSummary = document.getElementById("home-month-tasks-summary");
-var homeMonthProgressBar  = document.getElementById("home-month-progress-bar");
-var homeMonthProgressText = document.getElementById("home-month-progress-text");
-var goToTasksCurrentMonth = document.getElementById("go-to-tasks-current-month");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
-var todayDateLabel    = document.getElementById("today-date");
-var todayTasksList    = document.getElementById("today-tasks-list");
-var todayTasksSummary = document.getElementById("today-tasks-summary");
+  document.querySelectorAll(".tab-button").forEach(button => {
+    button.addEventListener("click", () => selectTab(button.dataset.tab));
+  });
 
-var goalForm       = document.getElementById("goal-form");
-var goalTitleInput = document.getElementById("goal-title");
-var goalsList      = document.getElementById("goals-list");
+  function overallProgress() {
+    let count = 0;
 
-var monthTargetsSelect = document.getElementById("month-targets-select");
-var targetForm         = document.getElementById("target-form");
-var targetTitleInput   = document.getElementById("target-title-input");
-var targetGoalSelect   = document.getElementById("target-goal-select");
-var targetsList        = document.getElementById("targets-list");
+    for (const checks of Object.values(state.checks)) {
+      count += checklistItems.filter(item => checks && checks[item.id]).length;
+    }
 
-// לוח משימות – פילטרים
-var boardGoalFilter     = document.getElementById("board-goal-filter");
-var boardTargetFilter   = document.getElementById("board-target-filter");
-var boardMonthFilter    = document.getElementById("board-month-filter");
-var boardPriorityFilter = document.getElementById("board-priority-filter");
+    return Math.min(100, count / (30 * checklistItems.length) * 100);
+  }
 
-// לוח משימות – הוספת משימה
-var boardTaskForm        = document.getElementById("board-task-form");
-var boardTaskTitle       = document.getElementById("board-task-title");
-var boardTaskGoal        = document.getElementById("board-task-goal");
-var boardTaskTarget      = document.getElementById("board-task-target");
-var boardTaskMonth       = document.getElementById("board-task-month");
-var boardTaskImportance  = document.getElementById("board-task-importance");
-var boardTaskUrgency     = document.getElementById("board-task-urgency");
+  function renderToday() {
+    const idx = dayIndex();
+    const date = localDate();
+    const completed = state.checks[date] || {};
 
-// לוח משימות – תצוגה
-var boardTasksList    = document.getElementById("board-tasks-list");
-var boardTasksSummary = document.getElementById("board-tasks-summary");
-
-// טוסט פידבק
-var feedbackToast = document.getElementById("feedback-toast");
-
-// ===== ניווט בין טאבים =====
-if (tabButtons && tabSections) {
-  for (var i = 0; i < tabButtons.length; i++) {
-    (function (btn) {
-      btn.addEventListener("click", function () {
-        var target = btn.getAttribute("data-tab");
-
-        for (var j = 0; j < tabButtons.length; j++) {
-          tabButtons[j].classList.remove("active");
-        }
-        btn.classList.add("active");
-
-        for (var k = 0; k < tabSections.length; k++) {
-          var sec = tabSections[k];
-          if (sec.id === target) {
-            sec.classList.add("active");
-          } else {
-            sec.classList.remove("active");
-          }
-        }
-
-        updateUI();
+    $("today-label").textContent =
+      new Date(`${date}T12:00:00`).toLocaleDateString("he-IL", {
+        weekday: "long",
+        day: "numeric",
+        month: "long"
       });
-    })(tabButtons[i]);
+
+    $("day-pill").textContent = `יום ${idx + 1} מתוך 30`;
+    $("daily-title").textContent = days[idx][0];
+    $("daily-description").textContent = days[idx][1];
+    $("important-task").value = state.importantTasks[date] || "";
+
+    $("daily-checklist").innerHTML = checklistItems.map(item => `
+      <label class="check-item ${completed[item.id] ? "done" : ""}">
+        <input type="checkbox" data-check="${item.id}"
+          ${completed[item.id] ? "checked" : ""}>
+        <span>${item.label}</span>
+      </label>
+    `).join("");
+
+    const count = checklistItems.filter(item => completed[item.id]).length;
+
+    $("checklist-count").textContent = `${count} מתוך ${checklistItems.length}`;
+    $("today-progress").style.width = `${count / checklistItems.length * 100}%`;
+    $("progress-number").textContent = `${Math.round(overallProgress())}%`;
+    $("progress-ring").style.setProperty("--progress", `${overallProgress()}%`);
+
+    $("greeting").textContent =
+      count === checklistItems.length
+        ? "עשית את שלך להיום. כל הכבוד."
+        : "בונים עקביות, יום אחרי יום.";
   }
-}
 
-// מעבר מלוח היום ללוח משימות עבור החודש הנוכחי
-if (goToTasksCurrentMonth) {
-  goToTasksCurrentMonth.addEventListener("click", function () {
-    var curr = currentMonthNumber();
+  $("daily-checklist").addEventListener("change", event => {
+    const id = event.target.dataset.check;
+    if (!id) return;
 
-    // לעבור ללשונית לוח משימות
-    for (var i = 0; i < tabButtons.length; i++) {
-      var b = tabButtons[i];
-      var tab = b.getAttribute("data-tab");
-      if (tab === "tasks-board") {
-        b.classList.add("active");
-      } else {
-        b.classList.remove("active");
-      }
-    }
-    for (var j = 0; j < tabSections.length; j++) {
-      var s = tabSections[j];
-      if (s.id === "tasks-board") {
-        s.classList.add("active");
-      } else {
-        s.classList.remove("active");
-      }
-    }
+    const date = localDate();
+    state.checks[date] ||= {};
+    state.checks[date][id] = event.target.checked;
 
-    if (boardMonthFilter) {
-      boardMonthFilter.value = String(curr);
-    }
-
-    updateUI();
+    save();
   });
-}
 
-// ===== אתחול חודשים ל-selectים =====
-function initMonthSelects() {
-  var i, opt;
-  if (monthTargetsSelect) {
-    monthTargetsSelect.innerHTML = "";
-    for (i = 0; i < monthNames.length; i++) {
-      opt = document.createElement("option");
-      opt.value = i + 1;
-      opt.textContent = monthNames[i];
-      monthTargetsSelect.appendChild(opt);
-    }
-    monthTargetsSelect.value = currentMonthNumber();
-  }
-
-  if (boardMonthFilter) {
-    boardMonthFilter.innerHTML = "";
-    opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "כל החודשים";
-    boardMonthFilter.appendChild(opt);
-
-    for (i = 0; i < monthNames.length; i++) {
-      opt = document.createElement("option");
-      opt.value = i + 1;
-      opt.textContent = monthNames[i];
-      boardMonthFilter.appendChild(opt);
-    }
-  }
-
-  if (boardTaskMonth) {
-    boardTaskMonth.innerHTML = "";
-    for (i = 0; i < monthNames.length; i++) {
-      opt = document.createElement("option");
-      opt.value = i + 1;
-      opt.textContent = monthNames[i];
-      boardTaskMonth.appendChild(opt);
-    }
-    boardTaskMonth.value = currentMonthNumber();
-  }
-}
-
-// ===== עדכון select של מטרות (Goals) =====
-function updateGoalSelects() {
-  var i, opt, prev, g;
-
-  // ליעדים חודשיים
-  if (targetGoalSelect) {
-    prev = targetGoalSelect.value;
-    targetGoalSelect.innerHTML = "";
-    opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "בחר מטרה לשנה";
-    targetGoalSelect.appendChild(opt);
-
-    for (i = 0; i < state.goals.length; i++) {
-      g = state.goals[i];
-      opt = document.createElement("option");
-      opt.value = g.id;
-      opt.textContent = g.title;
-      targetGoalSelect.appendChild(opt);
-    }
-
-    if (prev) {
-      targetGoalSelect.value = prev;
-    }
-  }
-
-  // פילטר לוח משימות
-  if (boardGoalFilter) {
-    prev = boardGoalFilter.value;
-    boardGoalFilter.innerHTML = "";
-    opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "כל המטרות";
-    boardGoalFilter.appendChild(opt);
-
-    for (i = 0; i < state.goals.length; i++) {
-      g = state.goals[i];
-      opt = document.createElement("option");
-      opt.value = g.id;
-      opt.textContent = g.title;
-      boardGoalFilter.appendChild(opt);
-    }
-
-    if (prev) {
-      boardGoalFilter.value = prev;
-    }
-  }
-
-  // מטרה להוספת משימה בלוח משימות
-  if (boardTaskGoal) {
-    prev = boardTaskGoal.value;
-    boardTaskGoal.innerHTML = "";
-    opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "בחר מטרה";
-    boardTaskGoal.appendChild(opt);
-
-    for (i = 0; i < state.goals.length; i++) {
-      g = state.goals[i];
-      opt = document.createElement("option");
-      opt.value = g.id;
-      opt.textContent = g.title;
-      boardTaskGoal.appendChild(opt);
-    }
-
-    if (prev) {
-      boardTaskGoal.value = prev;
-    }
-  }
-}
-
-// ===== עדכון select של יעדים (Targets) =====
-function updateTargetSelects() {
-  var i, opt, prev, targetsToShow, t, goal, goalName, monthName;
-
-  // יעדים עבור פילטר לוח משימות
-  if (boardTargetFilter) {
-    prev = boardTargetFilter.value;
-    boardTargetFilter.innerHTML = "";
-    opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "כל היעדים";
-    boardTargetFilter.appendChild(opt);
-
-    targetsToShow = state.targets.slice();
-    var selectedGoalId = boardGoalFilter ? boardGoalFilter.value : "";
-    if (selectedGoalId) {
-      targetsToShow = targetsToShow.filter(function (item) {
-        return String(item.goalId) === selectedGoalId;
-      });
-    }
-
-    for (i = 0; i < targetsToShow.length; i++) {
-      t = targetsToShow[i];
-      opt = document.createElement("option");
-      opt.value = t.id;
-      goal = state.goals.find(function (g) { return g.id === t.goalId; });
-      goalName = goal ? goal.title : "";
-      monthName = monthNames[t.month - 1] || "";
-      opt.textContent = goalName
-        ? t.title + " (" + goalName + " – " + monthName + ")"
-        : t.title + " (" + monthName + ")";
-      boardTargetFilter.appendChild(opt);
-    }
-
-    if (prev) {
-      boardTargetFilter.value = prev;
-    }
-  }
-
-  // יעדים עבור הוספת משימה בלוח משימות
-  if (boardTaskTarget) {
-    prev = boardTaskTarget.value;
-    boardTaskTarget.innerHTML = "";
-    opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "בחר יעד (לא חובה)";
-    boardTaskTarget.appendChild(opt);
-
-    targetsToShow = state.targets.slice();
-    var selectedGoalForTask = boardTaskGoal ? boardTaskGoal.value : "";
-    if (selectedGoalForTask) {
-      targetsToShow = targetsToShow.filter(function (item) {
-        return String(item.goalId) === selectedGoalForTask;
-      });
-    }
-
-    for (i = 0; i < targetsToShow.length; i++) {
-      t = targetsToShow[i];
-      opt = document.createElement("option");
-      opt.value = t.id;
-      monthName = monthNames[t.month - 1] || "";
-      opt.textContent = t.title + " (" + monthName + ")";
-      boardTaskTarget.appendChild(opt);
-    }
-
-    if (prev) {
-      boardTaskTarget.value = prev;
-    }
-  }
-}
-
-// שינוי מטרה בטופס הוספת משימה → עדכון יעדים
-if (boardTaskGoal) {
-  boardTaskGoal.addEventListener("change", function () {
-    updateTargetSelects();
+  $("save-important-task").addEventListener("click", () => {
+    state.importantTasks[localDate()] = $("important-task").value.trim();
+    save();
+    showToast("המשימה נשמרה");
   });
-}
 
-// שינוי מטרה בפילטר → משפיע על יעדים בפילטר
-if (boardGoalFilter) {
-  boardGoalFilter.addEventListener("change", function () {
-    updateTargetSelects();
-    updateTasksBoard();
+  function renderPlan() {
+    $("plan-weeks").innerHTML = weekNames.map((week, weekIndex) => {
+      const start = weekIndex * 7;
+      const end = Math.min(start + 7, 30);
+
+      const rows = days.slice(start, end).map((day, offset) => {
+        const number = start + offset;
+        const date = new Date(`${state.startDate}T12:00:00`);
+        date.setDate(date.getDate() + number);
+        const dateString = date.toISOString().slice(0, 10);
+        const isToday = number === dayIndex();
+
+        const checked = checklistItems.every(item =>
+          state.checks[dateString] && state.checks[dateString][item.id]
+        );
+
+        return `
+          <div class="day-row ${isToday ? "current" : ""}">
+            <div class="day-num">${number + 1}</div>
+            <div>
+              <h4>${escapeHTML(day[0])}</h4>
+              <p>${escapeHTML(day[1])}</p>
+            </div>
+            <button data-goto-day="${number}" class="${checked ? "active" : ""}">
+              ${checked ? "הושלם" : isToday ? "היום" : `יום ${number + 1}`}
+            </button>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <article class="week-card">
+          <div class="week-title">
+            <div>
+              <h3>${week[0]}</h3>
+              <p>${week[1]}</p>
+            </div>
+            <span class="pill">ימים ${start + 1}–${end}</span>
+          </div>
+          ${rows}
+        </article>
+      `;
+    }).join("");
+  }
+
+  $("plan-weeks").addEventListener("click", event => {
+    const button = event.target.closest("[data-goto-day]");
+    if (!button) return;
+
+    const number = Number(button.dataset.gotoDay);
+
+    if (number !== dayIndex()) {
+      showToast(`היום שלך בתוכנית הוא יום ${dayIndex() + 1}`);
+    } else {
+      selectTab("today");
+    }
   });
-}
 
-if (boardTargetFilter) {
-  boardTargetFilter.addEventListener("change", function () {
-    updateTasksBoard();
-  });
-}
+  $("goal-form").addEventListener("submit", event => {
+    event.preventDefault();
 
-if (boardMonthFilter) {
-  boardMonthFilter.addEventListener("change", function () {
-    updateTasksBoard();
-  });
-}
-
-if (boardPriorityFilter) {
-  boardPriorityFilter.addEventListener("change", function () {
-    updateTasksBoard();
-  });
-}
-
-if (monthTargetsSelect) {
-  monthTargetsSelect.addEventListener("change", function () {
-    updateMonthTargets();
-  });
-}
-
-// ===== פידבק חיובי =====
-function showFeedback() {
-  if (!feedbackToast) return;
-  feedbackToast.textContent = randomItem(FEEDBACK_MESSAGES);
-  feedbackToast.classList.remove("hidden");
-  feedbackToast.classList.add("show");
-  setTimeout(function () {
-    feedbackToast.classList.remove("show");
-  }, 2200);
-}
-
-// ===== הוספת מטרה =====
-if (goalForm) {
-  goalForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var title = goalTitleInput ? goalTitleInput.value.trim() : "";
+    const title = $("goal-title").value.trim();
     if (!title) return;
 
     state.goals.push({
-      id: Date.now(),
-      title: title
+      id: Date.now().toString(),
+      title,
+      category: $("goal-category").value,
+      measure: $("goal-measure").value.trim(),
+      progress: 0,
+      done: false
     });
 
-    if (goalTitleInput) goalTitleInput.value = "";
-    saveState();
-    updateUI();
-  });
-}
+    $("goal-title").value = "";
+    $("goal-measure").value = "";
 
-// ===== הוספת יעד חודשי =====
-if (targetForm) {
-  targetForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var title = targetTitleInput ? targetTitleInput.value.trim() : "";
-    var month = monthTargetsSelect
-      ? parseInt(monthTargetsSelect.value, 10)
-      : currentMonthNumber();
-    var goalId = targetGoalSelect ? targetGoalSelect.value : "";
-
-    if (!title || !goalId) return;
-
-    state.targets.push({
-      id: Date.now(),
-      title: title,
-      goalId: Number(goalId),
-      month: month
-    });
-
-    if (targetTitleInput) targetTitleInput.value = "";
-    saveState();
-    updateUI();
-  });
-}
-
-// ===== הוספת משימה בלוח משימות =====
-if (boardTaskForm) {
-  boardTaskForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var title = boardTaskTitle ? boardTaskTitle.value.trim() : "";
-    if (!title) return;
-
-    var goalId = boardTaskGoal ? boardTaskGoal.value : "";
-    if (!goalId) return; // חייב מטרה
-
-    var targetId   = boardTaskTarget ? boardTaskTarget.value || null : null;
-    var monthValue = boardTaskMonth
-      ? parseInt(boardTaskMonth.value, 10)
-      : currentMonthNumber();
-    var importance = boardTaskImportance ? boardTaskImportance.value : "high";
-    var urgency    = boardTaskUrgency ? boardTaskUrgency.value : "high";
-
-    state.tasks.push({
-      id: Date.now(),
-      title: title,
-      goalId: Number(goalId),
-      targetId: targetId ? Number(targetId) : null,
-      month: monthValue,
-      done: false,
-      importance: importance,
-      urgency: urgency
-    });
-
-    if (boardTaskTitle) boardTaskTitle.value = "";
-    saveState();
-    updateUI();
-  });
-}
-
-// ===== מסך היום + שנה + חודש =====
-function updateHome() {
-  if (
-    !yearGoalsSummary ||
-    !yearTasksSummary ||
-    !yearProgressBar ||
-    !yearProgressText ||
-    !homeMonthTitle ||
-    !homeMonthTargets ||
-    !homeMonthTasksSummary ||
-    !homeMonthProgressBar ||
-    !homeMonthProgressText ||
-    !motivationText ||
-    !todayDateLabel ||
-    !todayTasksList ||
-    !todayTasksSummary
-  ) {
-    return;
-  }
-
-  // משפט מוטיבציה
-  motivationText.textContent = randomItem(MOTIVATION_QUOTES);
-
-  // תאריך היום
-  var now = new Date();
-  var dayNames = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
-  var dayName = dayNames[now.getDay()];
-  var dayNum = now.getDate();
-  var monthIndex = now.getMonth(); // 0-11
-  var year = now.getFullYear();
-  var monthNameToday = monthNames[monthIndex];
-  todayDateLabel.textContent =
-    "יום " + dayName + ", " + dayNum + " " + monthNameToday + " " + year;
-
-  // ---- חלק שנה ----
-  var totalGoals = state.goals.length;
-  yearGoalsSummary.textContent = totalGoals + " מטרות הוגדרו";
-
-  var totalTasks = state.tasks.length;
-  var doneTasks  = state.tasks.filter(function (t) { return t.done; }).length;
-  yearTasksSummary.textContent =
-    doneTasks + " מתוך " + totalTasks + " משימות בוצעו";
-
-  var yearPercent = totalTasks === 0 ? 0 : (doneTasks / totalTasks) * 100;
-  yearProgressBar.style.width = yearPercent + "%";
-  yearProgressText.textContent = yearPercent.toFixed(0) + "%";
-
-  // ---- חלק חודש ----
-  var currMonth = currentMonthNumber();
-  var mName = monthNames[currMonth - 1];
-  homeMonthTitle.textContent = "החודש – " + mName;
-
-  var monthTargets = state.targets.filter(function (t) {
-    return t.month === currMonth;
-  });
-  homeMonthTargets.innerHTML = "";
-  if (monthTargets.length === 0) {
-    var li = document.createElement("li");
-    li.textContent = "אין עדיין יעדים לחודש הזה.";
-    homeMonthTargets.appendChild(li);
-  } else {
-    monthTargets.forEach(function (t) {
-      var li2 = document.createElement("li");
-      var goal = state.goals.find(function (g) { return g.id === t.goalId; });
-      var goalName = goal ? goal.title : "";
-      li2.textContent = goalName ? t.title + " (" + goalName + ")" : t.title;
-      homeMonthTargets.appendChild(li2);
-    });
-  }
-
-  var monthTasks = state.tasks.filter(function (t) {
-    return t.month === currMonth;
-  });
-  var monthDone  = monthTasks.filter(function (t) { return t.done; }).length;
-  homeMonthTasksSummary.textContent =
-    monthDone + " מתוך " + monthTasks.length + " משימות בוצעו";
-
-  var monthPercent =
-    monthTasks.length === 0 ? 0 : (monthDone / monthTasks.length) * 100;
-  homeMonthProgressBar.style.width = monthPercent + "%";
-  homeMonthProgressText.textContent = monthPercent.toFixed(0) + "%";
-
-  // ---- "המשימות להיום" – לוח עבודה יומי ----
-  var openMonthTasks = monthTasks.filter(function (t) { return !t.done; });
-
-  var order = ["hh","hl","lh","ll"];
-  openMonthTasks.sort(function (a, b) {
-    var pa = order.indexOf(priorityKey(a));
-    var pb = order.indexOf(priorityKey(b));
-    if (pa !== pb) return pa - pb;
-    return a.month - b.month;
+    save();
+    showToast("היעד נוסף");
   });
 
-  todayTasksList.innerHTML = "";
+  function renderGoals() {
+    $("goals-list").innerHTML = state.goals.length
+      ? state.goals.map(goal => `
+        <article class="goal-item">
+          <div class="goal-category">${escapeHTML(goal.category)}</div>
+          <h3>${escapeHTML(goal.title)} ${goal.done ? "✓" : ""}</h3>
+          ${goal.measure ? `<p>${escapeHTML(goal.measure)}</p>` : ""}
 
-  if (openMonthTasks.length === 0) {
-    todayTasksSummary.textContent = "אין כרגע משימות פתוחות להיום.";
-    var liToday = document.createElement("li");
-    liToday.textContent = "אפשר להוסיף משימות בלוח המשימות או לנוח 😉";
-    todayTasksList.appendChild(liToday);
-  } else {
-    todayTasksSummary.textContent =
-      "יש לך " + openMonthTasks.length + " משימות פתוחות להיום.";
+          <div class="goal-progress">
+            <span>התקדמות</span>
+            <span data-progress-label="${goal.id}">${goal.progress}%</span>
+          </div>
 
-    // עד 20 משימות כדי לא להציף
-    var todayList = openMonthTasks.slice(0, 20);
+          <input aria-label="התקדמות ביעד" type="range"
+            min="0" max="100" step="5" value="${goal.progress}"
+            data-goal-progress="${goal.id}">
 
-    todayList.forEach(function (task) {
-      var li = document.createElement("li");
-
-      var info = document.createElement("div");
-      info.className = "task-info";
-
-      var label = document.createElement("label");
-      label.className = "checkbox-label";
-
-      var checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = task.done;
-      checkbox.onchange = function () {
-        var wasDone = task.done;
-        task.done = checkbox.checked;
-        saveState();
-        updateUI();
-        if (!wasDone && task.done) {
-          showFeedback();
-        }
-      };
-
-      var titleSpan = document.createElement("span");
-      titleSpan.textContent = task.title;
-      if (task.done) {
-        titleSpan.style.textDecoration = "line-through";
-      }
-
-      label.appendChild(checkbox);
-      label.appendChild(titleSpan);
-      info.appendChild(label);
-
-      var sub = document.createElement("div");
-      sub.className = "task-sub";
-
-      var goal = state.goals.find(function (g) { return g.id === task.goalId; });
-      var target = state.targets.find(function (t) { return t.id === task.targetId; });
-
-      var parts = [];
-      if (goal) {
-        parts.push("מטרה: " + goal.title);
-      }
-      if (target) {
-        parts.push("יעד: " + target.title);
-      }
-      sub.textContent = parts.join(" | ");
-
-      if (sub.textContent) {
-        info.appendChild(sub);
-      }
-
-      var controls = document.createElement("div");
-      controls.className = "task-controls";
-
-      var pKey = priorityKey(task);
-      var prioritySpan = document.createElement("span");
-      prioritySpan.className = "priority-tag priority-" + pKey;
-      prioritySpan.textContent = priorityLabel(pKey);
-      controls.appendChild(prioritySpan);
-
-      var editBtn = document.createElement("button");
-      editBtn.textContent = "ערוך";
-      editBtn.className = "small-btn";
-      editBtn.onclick = function () {
-        var newTitle = prompt("עדכון שם המשימה:", task.title);
-        if (newTitle !== null) {
-          newTitle = newTitle.trim();
-          if (newTitle) {
-            task.title = newTitle;
-            saveState();
-            updateUI();
-          }
-        }
-      };
-      controls.appendChild(editBtn);
-
-      var delBtn = document.createElement("button");
-      delBtn.textContent = "מחק";
-      delBtn.className = "small-btn delete";
-      delBtn.onclick = function () {
-        state.tasks = state.tasks.filter(function (t) {
-          return t.id !== task.id;
-        });
-        saveState();
-        updateUI();
-      };
-      controls.appendChild(delBtn);
-
-      li.appendChild(info);
-      li.appendChild(controls);
-
-      todayTasksList.appendChild(li);
-    });
-  }
-}
-
-// ===== מסך מטרות =====
-function updateGoalsList() {
-  if (!goalsList) return;
-  goalsList.innerHTML = "";
-
-  if (state.goals.length === 0) {
-    var li = document.createElement("li");
-    li.textContent = "עוד לא הגדרת מטרות. אפשר להתחיל באחת קטנה 🙂";
-    goalsList.appendChild(li);
-    return;
+          <div class="goal-actions">
+            <button data-delete-goal="${goal.id}">מחיקת יעד</button>
+          </div>
+        </article>
+      `).join("")
+      : `<div class="card empty-state">עדיין אין יעדים. הוסף יעד שחשוב לך באמת.</div>`;
   }
 
-  state.goals.forEach(function (goal) {
-    var li = document.createElement("li");
+  $("goals-list").addEventListener("input", event => {
+    const range = event.target.closest("[data-goal-progress]");
+    if (!range) return;
 
-    var info = document.createElement("div");
-    info.className = "goal-info";
+    const goal = state.goals.find(item => item.id === range.dataset.goalProgress);
+    if (goal) goal.progress = Number(range.value);
 
-    var title = document.createElement("div");
-    title.className = "goal-title";
-    title.textContent = goal.title;
+    const label = document.querySelector(
+      `[data-progress-label="${range.dataset.goalProgress}"]`
+    );
 
-    var relatedTargets = state.targets.filter(function (t) {
-      return t.goalId === goal.id;
-    });
-    var relatedTasks   = state.tasks.filter(function (t) {
-      return t.goalId === goal.id;
-    });
+    if (label) label.textContent = `${range.value}%`;
 
-    var sub = document.createElement("div");
-    sub.className = "goal-sub";
-    sub.textContent =
-      "יעדים: " + relatedTargets.length + ", משימות: " + relatedTasks.length;
-
-    info.appendChild(title);
-    info.appendChild(sub);
-
-    var controls = document.createElement("div");
-    controls.className = "goal-controls";
-
-    var manageTargetsBtn = document.createElement("button");
-    manageTargetsBtn.textContent = "ליעדים חודשיים";
-    manageTargetsBtn.className = "small-btn primary";
-    manageTargetsBtn.onclick = function () {
-      var i, b, s;
-      for (i = 0; i < tabButtons.length; i++) {
-        b = tabButtons[i];
-        if (b.getAttribute("data-tab") === "months") {
-          b.classList.add("active");
-        } else {
-          b.classList.remove("active");
-        }
-      }
-      for (i = 0; i < tabSections.length; i++) {
-        s = tabSections[i];
-        if (s.id === "months") {
-          s.classList.add("active");
-        } else {
-          s.classList.remove("active");
-        }
-      }
-      if (targetGoalSelect) {
-        targetGoalSelect.value = goal.id;
-      }
-      updateUI();
-    };
-
-    var tasksBoardBtn = document.createElement("button");
-    tasksBoardBtn.textContent = "לוח משימות";
-    tasksBoardBtn.className = "small-btn";
-    tasksBoardBtn.onclick = function () {
-      var i, b, s;
-      for (i = 0; i < tabButtons.length; i++) {
-        b = tabButtons[i];
-        if (b.getAttribute("data-tab") === "tasks-board") {
-          b.classList.add("active");
-        } else {
-          b.classList.remove("active");
-        }
-      }
-      for (i = 0; i < tabSections.length; i++) {
-        s = tabSections[i];
-        if (s.id === "tasks-board") {
-          s.classList.add("active");
-        } else {
-          s.classList.remove("active");
-        }
-      }
-      if (boardGoalFilter) {
-        boardGoalFilter.value = String(goal.id);
-      }
-      updateUI();
-    };
-
-    var delBtn = document.createElement("button");
-    delBtn.textContent = "מחק";
-    delBtn.className = "small-btn delete";
-    delBtn.onclick = function () {
-      state.targets = state.targets.filter(function (t) {
-        return t.goalId !== goal.id;
-      });
-      state.tasks   = state.tasks.filter(function (t) {
-        return t.goalId !== goal.id;
-      });
-      state.goals   = state.goals.filter(function (g) {
-        return g.id !== goal.id;
-      });
-      saveState();
-      updateUI();
-    };
-
-    controls.appendChild(manageTargetsBtn);
-    controls.appendChild(tasksBoardBtn);
-    controls.appendChild(delBtn);
-
-    li.appendChild(info);
-    li.appendChild(controls);
-
-    goalsList.appendChild(li);
-  });
-}
-
-// ===== מסך יעדים חודשיים =====
-function updateMonthTargets() {
-  if (!targetsList || !monthTargetsSelect) return;
-  targetsList.innerHTML = "";
-
-  var month = parseInt(monthTargetsSelect.value, 10);
-  var targetsForMonth = state.targets.filter(function (t) {
-    return t.month === month;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   });
 
-  if (targetsForMonth.length === 0) {
-    var li = document.createElement("li");
-    li.textContent = "אין יעדים לחודש זה. אפשר להוסיף יעד חדש 👇";
-    targetsList.appendChild(li);
-    return;
-  }
+  $("goals-list").addEventListener("change", event => {
+    const range = event.target.closest("[data-goal-progress]");
+    if (!range) return;
 
-  targetsForMonth.forEach(function (target) {
-    var li = document.createElement("li");
+    const goal = state.goals.find(item => item.id === range.dataset.goalProgress);
 
-    var info = document.createElement("div");
-    info.className = "target-info";
-
-    var title = document.createElement("div");
-    title.className = "target-title";
-    title.textContent = target.title;
-
-    var goal = state.goals.find(function (g) { return g.id === target.goalId; });
-    var goalName = goal ? goal.title : "";
-
-    var relatedTasks = state.tasks.filter(function (t) {
-      return t.targetId === target.id;
-    });
-
-    var sub = document.createElement("div");
-    sub.className = "target-sub";
-    sub.textContent = goalName
-      ? "מטרה: " + goalName + " | משימות: " + relatedTasks.length
-      : "משימות: " + relatedTasks.length;
-
-    info.appendChild(title);
-    info.appendChild(sub);
-
-    var controls = document.createElement("div");
-    controls.className = "target-controls";
-
-    var tasksBtn = document.createElement("button");
-    tasksBtn.textContent = "לוח משימות";
-    tasksBtn.className = "small-btn primary";
-    tasksBtn.onclick = function () {
-      var i, b, s;
-      for (i = 0; i < tabButtons.length; i++) {
-        b = tabButtons[i];
-        if (b.getAttribute("data-tab") === "tasks-board") {
-          b.classList.add("active");
-        } else {
-          b.classList.remove("active");
-        }
-      }
-      for (i = 0; i < tabSections.length; i++) {
-        s = tabSections[i];
-        if (s.id === "tasks-board") {
-          s.classList.add("active");
-        } else {
-          s.classList.remove("active");
-        }
-      }
-
-      if (boardGoalFilter)   boardGoalFilter.value   = String(target.goalId);
-      if (boardTargetFilter) boardTargetFilter.value = String(target.id);
-      if (boardMonthFilter)  boardMonthFilter.value  = String(target.month);
-
-      updateUI();
-    };
-
-    var delBtn = document.createElement("button");
-    delBtn.textContent = "מחק";
-    delBtn.className = "small-btn delete";
-    delBtn.onclick = function () {
-      state.tasks   = state.tasks.filter(function (t) {
-        return t.targetId !== target.id;
-      });
-      state.targets = state.targets.filter(function (t) {
-        return t.id !== target.id;
-      });
-      saveState();
-      updateUI();
-    };
-
-    controls.appendChild(tasksBtn);
-    controls.appendChild(delBtn);
-
-    li.appendChild(info);
-    li.appendChild(controls);
-
-    targetsList.appendChild(li);
-  });
-}
-
-// ===== לוח משימות =====
-function priorityKey(task) {
-  var imp = task.importance === "high" ? "h" : "l";
-  var urg = task.urgency === "high" ? "h" : "l";
-  return imp + urg; // "hh", "hl", "lh", "ll"
-}
-
-function priorityLabel(key) {
-  switch (key) {
-    case "hh": return "חשוב ודחוף";
-    case "hl": return "חשוב ולא דחוף";
-    case "lh": return "לא חשוב אך דחוף";
-    case "ll": return "לא חשוב ולא דחוף";
-    default:   return "";
-  }
-}
-
-function updateTasksBoard() {
-  if (!boardTasksList || !boardTasksSummary) return;
-  boardTasksList.innerHTML = "";
-
-  var goalFilter     = boardGoalFilter     ? boardGoalFilter.value     : "";
-  var targetFilter   = boardTargetFilter   ? boardTargetFilter.value   : "";
-  var monthFilter    = boardMonthFilter    ? boardMonthFilter.value    : "";
-  var priorityFilter = boardPriorityFilter ? boardPriorityFilter.value : "";
-
-  var tasks = state.tasks.slice();
-
-  if (goalFilter) {
-    tasks = tasks.filter(function (t) { return String(t.goalId) === goalFilter; });
-  }
-  if (targetFilter) {
-    tasks = tasks.filter(function (t) { return String(t.targetId) === targetFilter; });
-  }
-  if (monthFilter) {
-    tasks = tasks.filter(function (t) { return String(t.month) === monthFilter; });
-  }
-  if (priorityFilter) {
-    tasks = tasks.filter(function (t) { return priorityKey(t) === priorityFilter; });
-  }
-
-  var total = tasks.length;
-  var done  = tasks.filter(function (t) { return t.done; }).length;
-
-  boardTasksSummary.textContent =
-    done + " מתוך " + total + " משימות מסוננות בוצעו";
-
-  if (tasks.length === 0) {
-    var li = document.createElement("li");
-    li.textContent = "אין משימות בהתאם לסינון הנוכחי.";
-    boardTasksList.appendChild(li);
-    return;
-  }
-
-  var order = ["hh","hl","lh","ll"];
-  tasks.sort(function (a, b) {
-    var pa = order.indexOf(priorityKey(a));
-    var pb = order.indexOf(priorityKey(b));
-    if (pa !== pb) return pa - pb;
-    return a.month - b.month;
-  });
-
-  tasks.forEach(function (task) {
-    var li = document.createElement("li");
-
-    var info = document.createElement("div");
-    info.className = "task-info";
-
-    var label = document.createElement("label");
-    label.className = "checkbox-label";
-
-    var checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = task.done;
-    checkbox.onchange = function () {
-      var wasDone = task.done;
-      task.done = checkbox.checked;
-      saveState();
-      updateUI();
-      if (!wasDone && task.done) {
-        showFeedback();
-      }
-    };
-
-    var span = document.createElement("span");
-    var monthName = monthNames[task.month - 1] || "";
-    span.textContent = task.title + " (" + monthName + ")";
-    if (task.done) {
-      span.style.textDecoration = "line-through";
+    if (goal) {
+      goal.done = goal.progress === 100;
+      save();
     }
+  });
 
-    label.appendChild(checkbox);
-    label.appendChild(span);
+  $("goals-list").addEventListener("click", event => {
+    const button = event.target.closest("[data-delete-goal]");
+    if (!button) return;
 
-    var sub = document.createElement("div");
-    sub.className = "task-sub";
+    state.goals = state.goals.filter(
+      goal => goal.id !== button.dataset.deleteGoal
+    );
 
-    var goal = state.goals.find(function (g) { return g.id === task.goalId; });
-    var target = state.targets.find(function (t) { return t.id === task.targetId; });
-    var goalName   = goal   ? goal.title   : "";
-    var targetName = target ? target.title : "";
+    save();
+    showToast("היעד נמחק");
+  });
 
-    if (goalName || targetName) {
-      sub.textContent =
-        (goalName   ? "מטרה: " + goalName   : "") +
-        (goalName && targetName ? " | " : "") +
-        (targetName ? "יעד: "   + targetName : "");
-    }
+  $("review-form").addEventListener("submit", event => {
+    event.preventDefault();
 
-    info.appendChild(label);
-    if (sub.textContent) info.appendChild(sub);
-
-    var controls = document.createElement("div");
-    controls.className = "task-controls";
-
-    var pKey = priorityKey(task);
-    var prioritySpan = document.createElement("span");
-    prioritySpan.className = "priority-tag priority-" + pKey;
-    prioritySpan.textContent = priorityLabel(pKey);
-    controls.appendChild(prioritySpan);
-
-    var delBtn = document.createElement("button");
-    delBtn.textContent = "מחק";
-    delBtn.className = "small-btn delete";
-    delBtn.onclick = function () {
-      state.tasks = state.tasks.filter(function (t) {
-        return t.id !== task.id;
-      });
-      saveState();
-      updateUI();
+    state.reviews[localDate()] = {
+      win: $("review-win").value.trim(),
+      improve: $("review-improve").value.trim(),
+      tomorrow: $("review-tomorrow").value.trim(),
+      updatedAt: new Date().toISOString()
     };
 
-    controls.appendChild(delBtn);
-
-    li.appendChild(info);
-    li.appendChild(controls);
-
-    boardTasksList.appendChild(li);
+    save();
+    showToast("הסיכום היומי נשמר");
   });
-}
 
-// ===== עדכון כללי =====
-function updateUI() {
-  updateGoalSelects();
-  updateTargetSelects();
-  updateHome();
-  updateGoalsList();
-  updateMonthTargets();
-  updateTasksBoard();
-}
+  function renderReviews() {
+    const review = state.reviews[localDate()] || {};
 
-// ===== התחלה =====
-loadState();
-initMonthSelects();
-updateUI();
+    $("review-win").value = review.win || "";
+    $("review-improve").value = review.improve || "";
+    $("review-tomorrow").value = review.tomorrow || "";
 
-// ===== רישום Service Worker עבור עבודה בלי רשת =====
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker
-      .register("./sw.js")
-      .catch(function (err) {
-        console.log("Service Worker registration failed:", err);
-      });
+    const entries = Object.entries(state.reviews)
+      .sort((a, b) => b[0].localeCompare(a[0]));
+
+    $("review-history").innerHTML = entries.length
+      ? entries.map(([date, item]) => `
+        <article class="review-entry">
+          <strong>${dateLabel(date)}</strong>
+          ${item.win ? `<p><b>מה עבד:</b> ${escapeHTML(item.win)}</p>` : ""}
+          ${item.improve ? `<p><b>לשיפור:</b> ${escapeHTML(item.improve)}</p>` : ""}
+          ${item.tomorrow ? `<p><b>למחר:</b> ${escapeHTML(item.tomorrow)}</p>` : ""}
+        </article>
+      `).join("")
+      : `<div class="empty-state">עדיין לא נשמרו סיכומים.</div>`;
+  }
+
+  $("export-data").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {
+      type: "application/json"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `30-yom-kadima-${localDate()}.json`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+    showToast("קובץ הנתונים יוצא");
   });
-}
+
+  $("theme-toggle").addEventListener("click", () => {
+    state.theme = state.theme === "light" ? "dark" : "light";
+    document.body.classList.toggle("light-mode", state.theme === "light");
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  });
+
+  $("reset-progress").addEventListener("click", () => {
+    if (!confirm("לאפס את כל הנתונים? מומלץ לייצא קודם גיבוי.")) return;
+
+    state = initialState();
+    save();
+    renderReviews();
+    showToast("ההתקדמות אופסה");
+  });
+
+  function render() {
+    document.body.classList.toggle("light-mode", state.theme === "light");
+    renderToday();
+    renderPlan();
+    renderGoals();
+    renderReviews();
+  }
+
+  render();
+
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js")
+        .catch(error => console.warn("Service worker registration failed:", error));
+    });
+  }
+})();
