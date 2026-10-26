@@ -1,154 +1,183 @@
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <meta name="description" content="30 יום קדימה — התקדמות אישית">
-  <title>30 יום קדימה</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="30 יום קדימה — צעד אחד בכל פעם">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg">
+<link rel="stylesheet" href="./style.css">
+<title>30 יום קדימה</title>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand-mark">30</div>
-    <div>
-      <h1>30 יום קדימה</h1>
-      <p>פחות דיבורים. יותר התקדמות.</p>
-    </div>
-    <button id="theme-toggle" class="icon-button">◐</button>
-  </header>
+<header class="topbar">
+  <div class="brand">
+    <b class="mark">30</b>
+    <span><strong>30 יום קדימה</strong><small>צעד אחד בכל פעם</small></span>
+  </div>
+  <button id="theme" class="icon" aria-label="החלפת ערכת נושא">◐</button>
+</header>
 
-  <main class="shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow" id="today-label"></p>
-        <h2 id="greeting">בונים עקביות, יום אחרי יום.</h2>
-        <p class="hero-sub">לא צריך יום מושלם. צריך לבצע את הדבר החשוב הבא.</p>
-      </div>
-      <div class="hero-progress">
-        <div class="ring" id="progress-ring">
-          <span id="progress-number">0%</span>
-        </div>
-        <span>התקדמות המסע</span>
-      </div>
-    </section>
+<main class="shell">
+<section class="panel hero">
+  <div>
+    <p class="eyebrow" id="dateLabel">היום מתחילים</p>
+    <h1>מה הדבר הנכון לעשות עכשיו?</h1>
+    <p class="muted">לא צריך לפתור הכול היום. צריך לבחור את הצעד הבא.</p>
+  </div>
+  <div>
+    <div class="between"><span>התקדמות באתגר</span><b id="dayLabel">יום 1 מתוך 30</b></div>
+    <div class="track"><div id="progress"></div></div>
+  </div>
+</section>
 
-    <nav class="tabs">
-      <button class="tab-button active" data-tab="today">היום</button>
-      <button class="tab-button" data-tab="plan">תוכנית 30 יום</button>
-      <button class="tab-button" data-tab="goals">היעדים שלי</button>
-      <button class="tab-button" data-tab="review">סיכום יומי</button>
-    </nav>
+<nav class="tabs">
+  <button class="tab active" data-view="today">היום</button>
+  <button class="tab" data-view="plan">תוכנית 30 יום</button>
+  <button class="tab" data-view="goals">היעדים שלי</button>
+  <button class="tab" data-view="review">סיכום</button>
+</nav>
 
-    <section id="tab-today" class="tab-panel active">
-      <div class="section-heading">
-        <h2>המשימות להיום</h2>
-        <span id="day-pill" class="pill">יום 1 מתוך 30</span>
-      </div>
+<section class="view active" id="today">
+  <div class="heading">
+    <div><p class="eyebrow">הצעד הבא</p><h2>המשימה החשובה להיום</h2></div>
+    <span class="pill" id="goalStatus">צריך לבחור יעד</span>
+  </div>
 
-      <div class="card daily-focus">
-        <p class="eyebrow">הפוקוס היומי</p>
-        <h3 id="daily-title"></h3>
-        <p id="daily-description"></p>
-      </div>
-
-      <div class="card">
-        <div class="card-heading">
-          <h3>צ'ק־ליסט יומי</h3>
-          <span id="checklist-count" class="muted">0 מתוך 5</span>
-        </div>
-        <div id="daily-checklist" class="checklist"></div>
-        <div class="progress-track">
-          <div id="today-progress" class="progress-fill"></div>
-        </div>
-      </div>
-
-      <div class="grid-two">
-        <div class="card">
-          <h3>המשימה החשובה שלי</h3>
-          <textarea id="important-task" rows="3"
-            placeholder="מה הדבר האחד שיקדם אותי היום?"></textarea>
-          <button id="save-important-task" class="button primary full">
-            שמירת המשימה
-          </button>
-        </div>
-
-        <div class="card quote-card">
-          <h3>תוצאות נבנות מהפעולות שאתה חוזר עליהן.</h3>
-          <p>תמדוד את עצמך לפי מה שביצעת, לא לפי כמה התלהבת להתחיל.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-plan" class="tab-panel">
-      <div class="section-heading">
-        <h2>תוכנית 30 יום</h2>
-      </div>
-      <div id="plan-weeks" class="plan-weeks"></div>
-    </section>
-
-    <section id="tab-goals" class="tab-panel">
-      <div class="section-heading"><h2>היעדים שלי</h2></div>
-
-      <form id="goal-form" class="card goal-form">
-        <label for="goal-title">מה היעד שלך?</label>
-        <input id="goal-title" required maxlength="120"
-          placeholder="למשל: לבנות עסק מצליח">
-
-        <label for="goal-category">תחום</label>
-        <select id="goal-category">
-          <option>עסקים וכסף</option>
-          <option>בריאות וגוף</option>
-          <option>משפחה וזוגיות</option>
-          <option>תורה ותפילה</option>
-          <option>התפתחות אישית</option>
-          <option>אחר</option>
+  <article class="panel">
+    <label for="task">מה הפעולה האחת שהכי תקדם אותך היום?</label>
+    <textarea id="task" rows="2" placeholder="למשל: לפנות ל־3 בעלי עסקים פוטנציאליים"></textarea>
+    <div class="row">
+      <div class="field">
+        <label for="minutes">כמה זמן?</label>
+        <select id="minutes">
+          <option>5</option><option>15</option><option selected>25</option><option>45</option><option>60</option>
         </select>
-
-        <label for="goal-measure">איך מודדים הצלחה?</label>
-        <input id="goal-measure" maxlength="160"
-          placeholder="תוצאה ברורה שאליה אתה רוצה להגיע">
-
-        <button class="button primary" type="submit">הוספת יעד</button>
-      </form>
-
-      <div id="goals-list" class="goal-list"></div>
-    </section>
-
-    <section id="tab-review" class="tab-panel">
-      <div class="section-heading"><h2>סיכום יומי</h2></div>
-
-      <form id="review-form" class="card review-form">
-        <label for="review-win">מה עשיתי טוב היום?</label>
-        <textarea id="review-win" rows="3"></textarea>
-
-        <label for="review-improve">מה לשפר מחר?</label>
-        <textarea id="review-improve" rows="3"></textarea>
-
-        <label for="review-tomorrow">מה הפעולה החשובה למחר?</label>
-        <textarea id="review-tomorrow" rows="2"></textarea>
-
-        <button class="button primary" type="submit">שמירת הסיכום</button>
-        <button class="button secondary" type="button" id="export-data">
-          ייצוא הנתונים לקובץ
-        </button>
-      </form>
-
-      <div class="card">
-        <h3>סיכומים קודמים</h3>
-        <div id="review-history"></div>
       </div>
-      <p class="small-note">הנתונים נשמרים בדפדפן במכשיר הזה בלבד.</p>
-    </section>
+      <div class="field">
+        <label for="when">מתי?</label>
+        <input id="when" placeholder="למשל: אחרי התפילה">
+      </div>
+    </div>
+    <label for="first">הצעד הראשון</label>
+    <input id="first" placeholder="למשל: לפתוח רשימת עסקים ולבחור אחד">
+    <div class="row actions">
+      <button class="primary" id="saveTask">שמור תוכנית</button>
+      <button class="secondary" id="startTimer">התחל עכשיו</button>
+    </div>
+    <div id="timerBox" class="timer hidden">
+      <strong id="timer">25:00</strong>
+      <button id="timerToggle" class="secondary">התחל טיימר</button>
+      <button id="timerReset" class="ghost">איפוס</button>
+    </div>
+  </article>
 
-    <footer>
-      <span>צעד אחד בכל פעם.</span>
-      <button id="reset-progress" class="text-button">איפוס התקדמות</button>
-    </footer>
-  </main>
+  <div class="heading">
+    <div><p class="eyebrow">עוגנים יומיים</p><h2>לשמור על הבסיס</h2></div>
+  </div>
+  <article class="panel">
+    <div id="habits"></div>
+    <div class="row addrow">
+      <input id="newHabit" placeholder="הוסף עוגן אישי">
+      <button id="addHabit" class="secondary">הוסף</button>
+    </div>
+  </article>
 
-  <div id="toast" class="toast" role="status"></div>
-  <script src="app.js"></script>
+  <div class="heading">
+    <div><p class="eyebrow">המאמן שלך</p><h2>נתקעת? נחשוב יחד</h2></div>
+  </div>
+  <article class="panel coach">
+    <p class="muted">הכן הודעה עם ההקשר שלך, העתק אותה ופתח ChatGPT. אין צורך במפתח API או בתשלום API.</p>
+    <label for="situation">מה קורה כרגע?</label>
+    <select id="situation">
+      <option>אני לא יודע מה הדבר החשוב ביותר לעשות</option>
+      <option>יש לי יותר מדי משימות ואני מוצף</option>
+      <option>אני דוחה משימה שאני יודע שחשובה</option>
+      <option>היום השתבש ואני רוצה לחזור למסלול</option>
+      <option>אני רוצה לתכנן את מחר</option>
+      <option>אני רוצה לבדוק את ההתקדמות שלי</option>
+    </select>
+    <div class="row actions">
+      <button id="ask" class="primary">הכן התייעצות עם המאמן</button>
+      <button id="copy" class="secondary">העתק הודעה</button>
+    </div>
+    <textarea id="prompt" rows="7" readonly placeholder="ההודעה למאמן תופיע כאן"></textarea>
+    <p id="coachStatus" class="status"></p>
+  </article>
+</section>
+
+<section class="view" id="plan">
+  <div class="heading"><div><p class="eyebrow">מסגרת גמישה</p><h2>תוכנית 30 הימים</h2></div></div>
+  <article class="panel phases">
+    <div><b>ימים 1–7 · בהירות</b><p>להבין את המצב, לבחור יעד מרכזי ולבנות שגרה אפשרית.</p></div>
+    <div><b>ימים 8–14 · עקביות</b><p>לחזור על פעולות חשובות ולפרק משימות לצעדים קטנים.</p></div>
+    <div><b>ימים 15–21 · תוצאות</b><p>למדוד מה עובד ולהשקיע במה שמקדם אותך.</p></div>
+    <div><b>ימים 22–30 · ביסוס</b><p>לשמר הרגלים שעובדים ולבחור את הצעד הבא.</p></div>
+  </article>
+  <div class="heading"><h2>רשימת פעולות</h2></div>
+  <article class="panel">
+    <label for="newPlan">משימה חדשה</label>
+    <input id="newPlan" placeholder="מה צריך לקרות כדי להתקדם?">
+    <label for="area">תחום</label>
+    <select id="area">
+      <option>עסק ופרנסה</option><option>בריאות</option><option>תורה ותפילה</option><option>משפחה</option><option>התפתחות אישית</option>
+    </select>
+    <button id="addPlan" class="primary full">הוסף לתוכנית</button>
+    <div id="planList"></div>
+  </article>
+</section>
+
+<section class="view" id="goals">
+  <div class="heading"><h2>היעדים שלי</h2></div>
+  <article class="panel">
+    <p class="muted">בחר יעד מרכזי אחד ל־30 הימים, לצד עוגנים קטנים בתחומים נוספים.</p>
+    <label for="mainGoal">היעד המרכזי שלי</label>
+    <textarea id="mainGoal" rows="2" placeholder="תוצאה ברורה שאפשר לבדוק בעוד 30 יום"></textarea>
+    <label for="why">למה זה חשוב לי?</label>
+    <textarea id="why" rows="2" placeholder="מה זה יאפשר לי בחיים?"></textarea>
+    <button id="saveGoal" class="primary full">שמור יעד</button>
+  </article>
+  <article class="panel">
+    <h3>יעדים נוספים</h3>
+    <label for="goalTitle">יעד</label>
+    <input id="goalTitle" placeholder="למשל: להתאמן 3 פעמים בשבוע">
+    <label for="goalArea">תחום</label>
+    <select id="goalArea">
+      <option>עסק ופרנסה</option><option>בריאות</option><option>תורה ותפילה</option><option>משפחה</option><option>התפתחות אישית</option>
+    </select>
+    <button id="addGoal" class="secondary full">הוסף יעד</button>
+    <div id="goalList"></div>
+  </article>
+</section>
+
+<section class="view" id="review">
+  <div class="heading"><h2>סיכום היום</h2></div>
+  <article class="panel">
+    <label for="win">מה עשיתי היום שקידם אותי?</label>
+    <textarea id="win" rows="2"></textarea>
+    <label for="block">מה עצר אותי?</label>
+    <textarea id="block" rows="2"></textarea>
+    <label for="tomorrow">מה הפעולה הראשונה שלי מחר?</label>
+    <textarea id="tomorrow" rows="2"></textarea>
+    <button id="saveReview" class="primary full">שמור סיכום</button>
+    <p id="reviewStatus" class="status"></p>
+  </article>
+  <div class="heading"><h2>היסטוריה וגיבוי</h2></div>
+  <article class="panel">
+    <div id="history"></div>
+    <div class="row actions">
+      <button id="export" class="secondary">ייצוא גיבוי</button>
+      <button id="importBtn" class="ghost">ייבוא גיבוי</button>
+      <input id="importFile" type="file" accept="application/json" hidden>
+    </div>
+  </article>
+</section>
+</main>
+
+<footer>30 יום קדימה · התקדמות, לא שלמות.</footer>
+<div id="toast" class="toast" role="status"></div>
+<script src="./app.js" defer></script>
 </body>
 </html>
