@@ -1,5 +1,4 @@
-
-const CACHE = '30-days-forward-v2';
+const CACHE = '30-days-forward-v3.1';
 
 const FILES = [
   './',
@@ -7,24 +6,30 @@ const FILES = [
   './style.css',
   './app.js',
   './manifest.webmanifest',
-  './icon.svg'
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(FILES))
+    caches.open(CACHE)
+      .then(cache => cache.addAll(FILES))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE)
-          .map(key => caches.delete(key))
+    caches.keys()
+      .then(keys =>
+        Promise.all(
+          keys
+            .filter(key => key !== CACHE)
+            .map(key => caches.delete(key))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   );
 });
 
@@ -38,9 +43,9 @@ self.addEventListener('fetch', event => {
       return fetch(event.request)
         .then(response => {
           const copy = response.clone();
-          caches.open(CACHE).then(cache =>
-            cache.put(event.request, copy)
-          );
+          caches.open(CACHE).then(cache => {
+            cache.put(event.request, copy);
+          });
           return response;
         })
         .catch(() => caches.match('./index.html'));
