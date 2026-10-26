@@ -1,14 +1,16 @@
+
 {
-  "name": "30 יום קדימה",
-  "short_name": "30 יום קדימה",
-  "description": "תכנון זמן, יעדים וניהול כלכלי",
-  "lang": "he",
+  "id": "./",
+  "name": "אפליקציית מטרות לשנה",
+  "short_name": "מטרות",
+  "description": "אפליקציה אישית לניהול מטרות, הרגלים והתקדמות",
+  "lang": "he-IL",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b1120",
-  "theme_color": "#101827",
+  "background_color": "#f7fafc",
+  "theme_color": "#667eea",
   "icons": [
     {
       "src": "./icon-192.png",
