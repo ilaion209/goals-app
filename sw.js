@@ -1,39 +1,35 @@
-const CACHE_NAME = "goals-app-30-days-v1";
 
-const CORE_ASSETS = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png"
+const CACHE = '30-days-forward-v2';
+
+const FILES = [
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './manifest.webmanifest',
+  './icon.svg'
 ];
 
-self.addEventListener("install", event => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(cache => cache.addAll(FILES))
   );
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", event => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(keys =>
-        Promise.all(
-          keys
-            .filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-        )
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(key => key !== CACHE)
+          .map(key => caches.delete(key))
       )
-      .then(() => self.clients.claim())
+    )
   );
 });
 
-self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request).then(cached => {
@@ -41,21 +37,13 @@ self.addEventListener("fetch", event => {
 
       return fetch(event.request)
         .then(response => {
-          if (
-            response &&
-            response.status === 200 &&
-            new URL(event.request.url).origin === self.location.origin
-          ) {
-            const copy = response.clone();
-
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, copy);
-            });
-          }
-
+          const copy = response.clone();
+          caches.open(CACHE).then(cache =>
+            cache.put(event.request, copy)
+          );
           return response;
         })
-        .catch(() => caches.match("./index.html"));
+        .catch(() => caches.match('./index.html'));
     })
   );
 });
