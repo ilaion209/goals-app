@@ -1,26 +1,17 @@
-
 {
   "id": "./",
-  "name": "אפליקציית מטרות לשנה",
-  "short_name": "מטרות",
-  "description": "אפליקציה אישית לניהול מטרות, הרגלים והתקדמות",
+  "name": "צמיחה – מטרות, הרגלים ושגרה",
+  "short_name": "צמיחה",
+  "description": "אפליקציה אישית לניהול מטרות, הרגלים, פוקוס ושגרה יומית",
   "lang": "he-IL",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f7fafc",
-  "theme_color": "#667eea",
+  "background_color": "#f6f5fb",
+  "theme_color": "#4f46e5",
   "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
