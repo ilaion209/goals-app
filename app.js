@@ -1,49 +1,51 @@
-(() => {
-"use strict";
-const KEY="30-days-forward-data-v4";
-const $=id=>document.getElementById(id);
-const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
-const uid=()=>`${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
-const blank=()=>({tasks:{},notes:{},reviews:{},events:{},goals:[],transactions:[],budgets:{family:0,business:0},habits:[],habitChecks:{}});
-let data=loadData(),selectedDate=today(),calendarMonth=new Date(),selectedScope="family";
-function loadData(){try{const raw=localStorage.getItem(KEY);if(!raw)return blank();const parsed=JSON.parse(raw);return {...blank(),...parsed, tasks:parsed.tasks||{},notes:parsed.notes||{},reviews:parsed.reviews||{},events:parsed.events||{},goals:Array.isArray(parsed.goals)?parsed.goals:[],transactions:Array.isArray(parsed.transactions)?parsed.transactions:[],budgets:parsed.budgets||{family:0,business:0},habits:Array.isArray(parsed.habits)?parsed.habits:[],habitChecks:parsed.habitChecks||{}}}catch(e){console.error(e);return blank()}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch(e){alert("לא הצלחתי לשמור. ייתכן שאחסון הדפדפן מלא. ייצא גיבוי ופנה מקום.");return false}}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function money(n){return new Intl.NumberFormat("he-IL",{style:"currency",currency:"ILS",maximumFractionDigits:2}).format(Number(n)||0)}
-function dateLabel(s){if(!s)return "";const [y,m,d]=s.split("-").map(Number);return new Intl.DateTimeFormat("he-IL",{day:"numeric",month:"long",year:"numeric"}).format(new Date(y,m-1,d))}
-function setStatus(id,msg){$(id).textContent=msg}
-function renderTasks(){const tasks=data.tasks[selectedDate]||[];$("taskList").innerHTML=tasks.length?tasks.map(t=>`<div class="item ${t.done?"done":""}"><input type="checkbox" aria-label="סמן משימה כהושלמה" data-task-check="${t.id}" ${t.done?"checked":""} style="width:20px"><div class="item-main">${esc(t.title)}</div><button class="danger-link" data-task-delete="${t.id}" aria-label="מחק משימה">מחק</button></div>`).join(""):'<p class="muted small">עוד אין משימות. הוסף את הצעד הבא שלך.</p>';$("taskProgress").textContent=`${tasks.filter(t=>t.done).length}/${tasks.length} הושלמו`}
-function renderToday(){ $("todayDate").value=selectedDate;$("dailyNote").value=data.notes[selectedDate]||"";$("dailyReview").value=data.reviews[selectedDate]||"";renderTasks()}
-function renderCalendar(){const y=calendarMonth.getFullYear(),m=calendarMonth.getMonth();$("monthLabel").textContent=new Intl.DateTimeFormat("he-IL",{month:"long",year:"numeric"}).format(calendarMonth);const first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);let html=["ב׳","ג׳","ד׳","ה׳","ו׳","ש׳","א׳"].map(x=>`<div class="calendar-weekday">${x}</div>`).join("");for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,outside=d.getMonth()!==m,has=(data.events[key]||[]).length>0;html+=`<button class="calendar-day ${outside?"outside":""} ${selectedDate===key?"selected":""} ${has?"has-event":""}" data-date="${key}" aria-label="${dateLabel(key)}">${d.getDate()}</button>`}$("calendarGrid").innerHTML=html;$("selectedDateLabel").textContent=`אירועים — ${dateLabel(selectedDate)}`;renderEvents()}
-function renderEvents(){const events=data.events[selectedDate]||[];$("eventList").innerHTML=events.length?events.map(e=>`<div class="item"><div class="item-main">${e.time?`<strong>${esc(e.time)}</strong> · `:""}${esc(e.title)}</div><button class="danger-link" data-event-delete="${e.id}">מחק</button></div>`).join(""):'<p class="muted small">אין אירועים ביום הזה.</p>'}
-function renderGoals(){$("goalList").innerHTML=data.goals.length?data.goals.map(g=>`<div class="item ${g.done?"done":""}"><input type="checkbox" data-goal-check="${g.id}" aria-label="השלמת מטרה" ${g.done?"checked":""} style="width:20px"><div class="item-main"><strong>${esc(g.title)}</strong>${g.deadline?`<small>יעד: ${dateLabel(g.deadline)}</small>`:""}${g.why?`<small>${esc(g.why)}</small>`:""}<div class="goal-progress"><span style="width:${g.done?100:0}%"></span></div></div><button class="danger-link" data-goal-delete="${g.id}">מחק</button></div>`).join(""):'<p class="muted">אין מטרות עדיין. כתוב מטרה אחת ברורה.</p>'}
-function scopedTransactions(){return data.transactions.filter(t=>t.scope===selectedScope)}
-function renderFinance(){const ts=scopedTransactions(),month=today().slice(0,7),monthly=ts.filter(t=>t.date.startsWith(month));const income=monthly.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0),expense=monthly.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0),saving=monthly.filter(t=>t.type==="saving").reduce((s,t)=>s+t.amount,0);$("incomeTotal").textContent=money(income);$("expenseTotal").textContent=money(expense+saving);$("balanceTotal").textContent=money(income-expense-saving);$("budgetAmount").value=data.budgets[selectedScope]||"";const budget=Number(data.budgets[selectedScope])||0;$("budgetStatus").textContent=budget?`נוצלו ${money(expense+saving)} מתוך ${money(budget)} (${Math.round((expense+saving)/budget*100)}%).`:`עדיין לא הוגדר תקציב.`;const sorted=[...ts].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);$("transactionCount").textContent=`${sorted.length} תנועות`; $("transactionList").innerHTML=sorted.length?sorted.slice(0,100).map(t=>`<div class="item"><div class="item-main"><strong>${esc(t.category)}</strong><small>${dateLabel(t.date)}${t.note?" · "+esc(t.note):""} · ${t.type==="income"?"הכנסה":t.type==="saving"?"חיסכון":"הוצאה"}</small></div><strong>${t.type==="income"?"+":"−"}${money(t.amount)}</strong><button class="danger-link" data-transaction-delete="${t.id}">מחק</button></div>`).join(""):'<p class="muted">אין תנועות בסעיף הזה עדיין.</p>'}
-function renderHabits(){const checks=data.habitChecks[selectedDate]||{};$("habitDate").value=selectedDate;const done=data.habits.filter(h=>checks[h.id]).length;$("habitProgress").textContent=`היום: ${done} מתוך ${data.habits.length} הרגלים הושלמו.`;$("habitList").innerHTML=data.habits.length?data.habits.map(h=>`<div class="item ${checks[h.id]?"done":""}"><input type="checkbox" data-habit-check="${h.id}" ${checks[h.id]?"checked":""} aria-label="סמן הרגל" style="width:20px"><div class="item-main">${esc(h.name)}</div><button class="danger-link" data-habit-delete="${h.id}">מחק</button></div>`).join(""):'<p class="muted">הוסף הרגל אחד שתרצה לחזק.</p>'}
-function render(){renderToday();renderCalendar();renderGoals();renderFinance();renderHabits()}
-function switchView(name){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view-${name}`))}
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
-$("todayDate").value=selectedDate;$("todayDate").addEventListener("change",e=>{selectedDate=e.target.value||today();renderToday();renderCalendar();renderHabits()});
-$("dailyForm").addEventListener("submit",e=>{e.preventDefault();const title=$("taskInput").value.trim();if(!title)return;const list=data.tasks[selectedDate]||(data.tasks[selectedDate]=[]);if(list.length>=3){alert("מומלץ להתמקד בשלוש משימות לכל היותר.");return}list.push({id:uid(),title,done:false});$("taskInput").value="";save();renderTasks()});
-$("saveNote").addEventListener("click",()=>{data.notes[selectedDate]=$("dailyNote").value;save();setStatus("noteStatus","נשמר")});
-$("saveReview").addEventListener("click",()=>{data.reviews[selectedDate]=$("dailyReview").value;save();alert("הסיכום נשמר.")});
-$("calendarGrid").addEventListener("click",e=>{const b=e.target.closest("[data-date]");if(!b)return;selectedDate=b.dataset.date;renderToday();renderCalendar();renderHabits()});
-$("prevMonth").addEventListener("click",()=>{calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()-1,1);renderCalendar()});
-$("nextMonth").addEventListener("click",()=>{calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,1);renderCalendar()});
-$("eventForm").addEventListener("submit",e=>{e.preventDefault();const title=$("eventTitle").value.trim();if(!title)return;(data.events[selectedDate]||(data.events[selectedDate]=[])).push({id:uid(),title,time:$("eventTime").value});$("eventTitle").value="";$("eventTime").value="";save();renderCalendar()});
-$("goalForm").addEventListener("submit",e=>{e.preventDefault();data.goals.push({id:uid(),title:$("goalTitle").value.trim(),deadline:$("goalDeadline").value,why:$("goalWhy").value.trim(),done:false});e.target.reset();save();renderGoals()});
-$("financeScope").addEventListener("change",e=>{selectedScope=e.target.value;renderFinance()});
-$("transactionDate").value=today();
-$("transactionForm").addEventListener("submit",e=>{e.preventDefault();const amount=Number($("transactionAmount").value),category=$("transactionCategory").value.trim(),date=$("transactionDate").value;if(!Number.isFinite(amount)||amount<=0||!category||!date){alert("בדוק את הסכום, הקטגוריה והתאריך.");return}data.transactions.push({id:uid(),scope:selectedScope,type:$("transactionType").value,amount,category,date,note:$("transactionNote").value.trim(),createdAt:Date.now()});$("transactionAmount").value="";$("transactionCategory").value="";$("transactionNote").value="";save();renderFinance()});
-$("budgetForm").addEventListener("submit",e=>{e.preventDefault();const n=Number($("budgetAmount").value);if(!Number.isFinite(n)||n<0)return;data.budgets[selectedScope]=n;save();renderFinance()});
-$("habitDate").addEventListener("change",e=>{selectedDate=e.target.value||today();renderToday();renderCalendar();renderHabits()});
-$("habitForm").addEventListener("submit",e=>{e.preventDefault();const name=$("habitName").value.trim();if(!name)return;if(data.habits.some(h=>h.name.toLowerCase()===name.toLowerCase())){alert("ההרגל כבר קיים.");return}data.habits.push({id:uid(),name});$("habitName").value="";save();renderHabits()});
-document.addEventListener("change",e=>{const el=e.target;if(el.dataset.taskCheck){const t=(data.tasks[selectedDate]||[]).find(x=>x.id===el.dataset.taskCheck);if(t)t.done=el.checked;save();renderTasks()}if(el.dataset.goalCheck){const g=data.goals.find(x=>x.id===el.dataset.goalCheck);if(g)g.done=el.checked;save();renderGoals()}if(el.dataset.habitCheck){const c=data.habitChecks[selectedDate]||(data.habitChecks[selectedDate]={});c[el.dataset.habitCheck]=el.checked;save();renderHabits()}});
-document.addEventListener("click",e=>{const el=e.target.closest("button");if(!el)return;const d=el.dataset;if(d.taskDelete){data.tasks[selectedDate]=(data.tasks[selectedDate]||[]).filter(x=>x.id!==d.taskDelete);save();renderTasks()}if(d.eventDelete){data.events[selectedDate]=(data.events[selectedDate]||[]).filter(x=>x.id!==d.eventDelete);save();renderCalendar()}if(d.goalDelete){data.goals=data.goals.filter(x=>x.id!==d.goalDelete);save();renderGoals()}if(d.habitDelete){data.habits=data.habits.filter(x=>x.id!==d.habitDelete);Object.values(data.habitChecks).forEach(c=>delete c[d.habitDelete]);save();renderHabits()}if(d.transactionDelete){data.transactions=data.transactions.filter(x=>x.id!==d.transactionDelete);save();renderFinance()}});
-$("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({app:"30 יום קדימה",version:4,exportedAt:new Date().toISOString(),data},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`30-yom-kadima-backup-${today()}.json`;a.click();URL.revokeObjectURL(url)});
-$("importInput").addEventListener("change",async e=>{const f=e.target.files?.[0];if(!f)return;try{const parsed=JSON.parse(await f.text()),incoming=parsed.data||parsed;if(!incoming||typeof incoming!=="object"||!Array.isArray(incoming.transactions)||!Array.isArray(incoming.goals))throw new Error("invalid");if(!confirm("שחזור יחליף את כל הנתונים הנוכחיים. מומלץ לייצא גיבוי לפני כן. להמשיך?"))return;data={...blank(),...incoming};save();render();alert("הגיבוי שוחזר.")}catch(err){alert("קובץ הגיבוי לא תקין או אינו מתאים לאפליקציה.")}finally{e.target.value=""}});
-$("clearData").addEventListener("click",()=>{if($("confirmDialog").showModal)$("confirmDialog").showModal();else if(confirm("למחוק את כל הנתונים?")){data=blank();save();render()}});
-$("confirmClear").addEventListener("click",e=>{e.preventDefault();data=blank();save();render();$("confirmDialog").close()});
-if("serviceWorker" in navigator && location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker registration failed",err)))}
-render();
-})();
+(function () {
+'use strict';
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
+const pad = n => String(n).padStart(2, '0');
+const dkey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => dkey(new Date());
+const monthKey = () => today().slice(0, 7);
+function weekStart() { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - x.getDay()); return dkey(x); }
+const dayIndex = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+const LETTERS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+
+/* ---------- content (from the infographics) ---------- */
+const MORNING = [
+  'לא פותחים את היום עם הטלפון – לפחות 15 דקות בלי מסכים',
+  'כוס מים מיד כשקמים',
+  'כותבים 3 דברים שרוצים להספיק היום',
+  'מקדישים 5 דקות ללמידה – קריאה, האזנה או משהו חדש'
+];
+const SUGGEST = [
+  ['בריאות ואנרגיה', ['הליכה של 20 דקות', 'שעות שינה קבועות', 'ירקות ופירות בתפריט', 'הפסקה מהישיבה – לקום, להתמתח']],
+  ['עבודה ופרודוקטיביות', ['להתחיל מהמשימה החשובה ביותר', 'פרק עבודה ממוקד של 25 דקות', 'לתכנן את מחר לפני שמסיימים לעבוד']],
+  ['חשיבה והתפתחות', ['לשאול "מה למדתי היום?"', 'לכתוב דבר אחד שמעריכים בחיים', 'פחות השוואה לאחרים']],
+  ['כסף והתנהלות', ['לעקוב אחר ההוצאות', 'לחסוך סכום קבוע מכל הכנסה', 'להמתין 24 שעות לפני רכישה לא מתוכננת']],
+  ['מערכות יחסים', ['להתקשר לאדם יקר לפחות פעם בשבוע', 'להקשיב בלי לקטוע ובלי טלפון', 'להגיד תודה ולהביע הערכה']]
+];
+const QUESTIONS = [
+  ['מטרות ושאיפות', ['מה הדבר שהכי הייתי רוצה להשיג בחיים?', 'איפה אני רואה את עצמי בעוד 5 שנים?', 'אילו לא הייתי מפחד מכישלון, מה הייתי עושה?', 'האם אני פועל היום בכיוון החיים שאני באמת רוצה?']],
+  ['ערכים ואמונות', ['מהם הערכים הכי חשובים לי בחיים?', 'האם אני חי לפי מה שבאמת חשוב לי?', 'באילו נושאים אני לא מוכן להתפשר?', 'אילו אמונות שלי מקדמות אותי ואילו מגבילות אותי?']],
+  ['רגשות ומחשבות', ['מה הדבר שהכי מעסיק אותי כרגע?', 'באילו מצבים אני מרגיש הכי טוב עם עצמי?', 'מה גורם לי להרגיש לחץ או חוסר ביטחון?', 'האם אני מקדיש זמן להקשיב לעצמי ולהבין מה אני מרגיש?']],
+  ['הרגלים והתנהלות יומיומית', ['אילו הרגלים שלי מקדמים אותי ואילו מעכבים אותי?', 'איך אני בדרך כלל מתחיל ומסיים את היום שלי?', 'על מה אני מבזבז יותר מדי זמן?', 'איזה שינוי קטן יכול לשפר משמעותית את החיים שלי?']],
+  ['מערכות יחסים וסביבה', ['מי האנשים שמשפיעים עליי בצורה הטובה ביותר?', 'האם אני מקיף את עצמי באנשים שמעודדים אותי לצמוח?', 'האם אני יודע להציב גבולות כשמשהו לא מתאים לי?', 'למי אני רוצה להקדיש יותר זמן ותשומת לב?']],
+  ['צמיחה והגשמה אישית', ['מה למדתי על עצמי מהאתגרים שעברתי?', 'באיזה תחום בחיים אני רוצה להשתפר?', 'מתי בפעם האחרונה עשיתי משהו שהוציא אותי מאזור הנוחות?', 'מה גורם לי להרגיש באמת משמעותי ומסופק?']]
+];
+const ALLQ = []; QUESTIONS.forEach(([c, qs]) => qs.forEach(q => ALLQ.push({ i: ALLQ.length, c, q })));
+const STOP = [
+  ['להשוות את עצמכם לאחרים', 'בדקו את ההתקדמות שלכם ביחס לעצמכם.'],
+  ['להגיד כן לכל בקשה', 'עצרו רגע ובדקו אם יש לכם זמן וכוח.'],
+  ['לדחות החלטות', 'אספו את המידע הדרוש וקבעו מועד להחלטה.'],
+  ['להעמיס משימות על כל יום', 'בחרו שלוש משימות חשובות והתמקדו בהן.'],
+  ['לבדוק את הטלפון בלי הפסקה', 'קבעו זמנים מוגדרים לבדיקה.'],
+  ['לנסות לרצות את כולם', 'פעלו לפי הערכים שלכם, לא לפי כל ציפייה.'],
+  ['להשאיר הכול לרגע האחרון', 'חלקו משימות גדולות לצעדים קטנים.'],
+  ['לחכות למוטיבציה', 'התחילו בצעד קטן גם בלי חשק.'],
+  ['להתעכב על טעויות מהעבר', 'הפיקו לקח אחד והחליטו מה עושים אחרת.'],
+  ['להתעלם מהצורך במנוחה', 'קבעו הפסקות קצרות במהלך היום.'],
+  ['לחשוב במקום לפעול', 'הפכו מחשבה אחת לפעולה מעשית.'],
+  ['להתמקד במה שאין לכם', 'כתבו בכל יום שלושה דברים שאתם מעריכים.'],
