@@ -1,4 +1,4 @@
-const CACHE = 'growth-v2';
+const CACHE = 'growth-v3';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'logo.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
