@@ -1,52 +1,40 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101827"><meta name="description" content="30 יום קדימה — תכנון, מטרות וכספים במקום אחד">
-<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="./style.css"><title>30 יום קדימה</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <title>צמיחה</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="topbar">
- <div><p class="eyebrow">תכנון אישי • מיקוד • התקדמות</p><h1>30 יום קדימה</h1><p class="muted">פחות רעש. יותר ביצוע.</p></div>
- <div class="top-actions"><button id="exportBtn" class="secondary">גיבוי נתונים</button><label class="secondary import-label">שחזור גיבוי<input id="importInput" type="file" accept="application/json"></label></div>
-</header>
-<main class="container">
- <nav class="tabs" aria-label="ניווט ראשי">
-  <button class="tab active" data-view="today">היום</button><button class="tab" data-view="calendar">יומן</button><button class="tab" data-view="goals">מטרות</button><button class="tab" data-view="finance">כספים</button><button class="tab" data-view="habits">הרגלים</button>
- </nav>
- <section id="view-today" class="view active">
-  <div class="section-head"><div><p class="eyebrow">התחלה פשוטה</p><h2>היום שלי</h2></div><input id="todayDate" type="date" aria-label="תאריך היום"></div>
-  <div class="grid two">
-   <article class="panel"><h3>שלוש משימות חשובות</h3><p class="muted small">בחר עד שלושה דברים שבאמת יקדמו אותך.</p><form id="dailyForm" class="stack"><input id="taskInput" maxlength="180" placeholder="מה הדבר הבא?" required><button class="primary" type="submit">הוסף משימה</button></form><div id="taskList" class="item-list"></div></article>
-   <article class="panel"><h3>תכנון קצר</h3><label for="dailyNote">מה חשוב לזכור היום?</label><textarea id="dailyNote" rows="5" placeholder="פגישה, כוונה, משהו שחשוב לא לשכוח…"></textarea><button id="saveNote" class="primary">שמור תכנון</button><p id="noteStatus" class="muted small" aria-live="polite"></p></article>
+  <header class="topbar">
+    <div>
+      <h1 id="pageTitle">היום</h1>
+      <p id="pageSub" class="sub"></p>
+    </div>
+    <button id="btnBackup" class="icon-btn" aria-label="גיבוי ושחזור">⚙️</button>
+  </header>
+
+  <main id="view" class="view"></main>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="today" class="active"><span>🌅</span>היום</button>
+    <button data-tab="habits"><span>🔁</span>הרגלים</button>
+    <button data-tab="goals"><span>🎯</span>מטרות</button>
+    <button data-tab="focus"><span>⏱️</span>פוקוס</button>
+    <button data-tab="home"><span>🏠</span>בית</button>
+    <button data-tab="learn"><span>💡</span>ידע</button>
+  </nav>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" id="modalCard"></div>
   </div>
-  <article class="panel"><div class="section-head"><h3>סיכום היום</h3><span id="taskProgress" class="pill">0/0 הושלמו</span></div><label for="dailyReview">מה עבד טוב ומה לשפר מחר?</label><textarea id="dailyReview" rows="3" placeholder="שתי שורות מספיקות."></textarea><button id="saveReview" class="secondary">שמור סיכום</button></article>
- </section>
- <section id="view-calendar" class="view">
-  <div class="section-head"><div><p class="eyebrow">תמונה רחבה</p><h2>יומן</h2></div><div class="inline"><button id="prevMonth" class="secondary" aria-label="חודש קודם">‹</button><strong id="monthLabel"></strong><button id="nextMonth" class="secondary" aria-label="חודש הבא">›</button></div></div>
-  <article class="panel"><div id="calendarGrid" class="calendar-grid"></div><div class="legend muted small">בחר יום כדי לראות או להוסיף אירוע.</div></article>
-  <article class="panel"><h3 id="selectedDateLabel">אירועים</h3><form id="eventForm" class="form-row"><input id="eventTitle" placeholder="שם האירוע" maxlength="160" required><input id="eventTime" type="time" aria-label="שעה"><button class="primary">הוסף</button></form><div id="eventList" class="item-list"></div></article>
- </section>
- <section id="view-goals" class="view">
-  <div class="section-head"><div><p class="eyebrow">כיוון ברור</p><h2>מטרות</h2></div></div>
-  <article class="panel"><form id="goalForm" class="form-grid"><input id="goalTitle" placeholder="מטרה ברורה" maxlength="180" required><input id="goalDeadline" type="date" aria-label="תאריך יעד"><input id="goalWhy" placeholder="למה זה חשוב? (לא חובה)" maxlength="220"><button class="primary">הוסף מטרה</button></form><div id="goalList" class="goal-list"></div></article>
- </section>
- <section id="view-finance" class="view">
-  <div class="section-head"><div><p class="eyebrow">שליטה במספרים</p><h2>כספים</h2></div><select id="financeScope" aria-label="סוג כספים"><option value="family">משפחה</option><option value="business">עסק</option></select></div>
-  <div class="grid three">
-   <article class="metric"><span class="muted">הכנסות החודש</span><strong id="incomeTotal">₪0</strong></article><article class="metric"><span class="muted">הוצאות החודש</span><strong id="expenseTotal">₪0</strong></article><article class="metric"><span class="muted">יתרה חודשית</span><strong id="balanceTotal">₪0</strong></article>
-  </div>
-  <article class="panel"><h3>רישום תנועה</h3><form id="transactionForm" class="form-grid"><select id="transactionType"><option value="expense">הוצאה</option><option value="income">הכנסה</option><option value="saving">חיסכון / העברה לחיסכון</option></select><input id="transactionAmount" type="number" min="0.01" step="0.01" placeholder="סכום בש״ח" required><input id="transactionCategory" placeholder="קטגוריה" maxlength="80" required><input id="transactionDate" type="date" required><input id="transactionNote" placeholder="הערה (לא חובה)" maxlength="180"><button class="primary">שמור תנועה</button></form></article>
-  <article class="panel"><div class="section-head"><h3>תקציב חודשי</h3><span class="muted small">לפי משפחה או עסק</span></div><form id="budgetForm" class="form-row"><input id="budgetAmount" type="number" min="0" step="1" placeholder="תקציב הוצאות חודשי" required><button class="secondary">שמור תקציב</button></form><div id="budgetStatus" class="muted small"></div></article>
-  <article class="panel"><div class="section-head"><h3>תנועות אחרונות</h3><span id="transactionCount" class="muted small"></span></div><div id="transactionList" class="item-list"></div></article>
- </section>
- <section id="view-habits" class="view">
-  <div class="section-head"><div><p class="eyebrow">עקביות לפני שלמות</p><h2>הרגלים יומיים</h2></div><input id="habitDate" type="date" aria-label="תאריך להרגלים"></div>
-  <article class="panel"><form id="habitForm" class="form-row"><input id="habitName" placeholder="הוסף הרגל" maxlength="100" required><button class="primary">הוסף</button></form><div id="habitList" class="item-list"></div><div id="habitProgress" class="muted small"></div></article>
- </section>
- <footer class="footer"><span>הנתונים נשמרים במכשיר/בדפדפן הזה.</span><button id="clearData" class="danger-link">מחיקת כל הנתונים</button></footer>
-</main>
-<dialog id="confirmDialog"><form method="dialog" class="dialog-content"><h3>למחוק את כל הנתונים?</h3><p>לא ניתן לבטל. ייצא גיבוי לפני המחיקה אם צריך.</p><div class="inline"><button value="cancel" class="secondary">ביטול</button><button id="confirmClear" value="confirm" class="danger">מחק הכל</button></div></form></dialog>
-<script src="./app.js" defer></script>
-</body></html>
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
